@@ -7,150 +7,139 @@
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <style>
 :root {
---primary: #6366f1;
---primary-hover: #4f46e5;
---background: #f9fafb;
+--primary: #FF4500; /* Reddit orange */
+--primary-hover: #e03d00;
+--background: #DAE0E6; /* Reddit light background */
 --card-bg: #ffffff;
---text: #1f2937;
---text-secondary: #6b7280;
---border: #e5e7eb;
+--text: #1c1c1c;
+--text-secondary: #7c7c7c;
+--border: #edeff1;
 --toast-bg: #1f2937;
 --toast-text: #ffffff;
+--vote-up: #FF4500;
+--vote-down: #7193FF;
 }
 
 .dark {
---primary: #818cf8;
---primary-hover: #6366f1;
---background: #111827;
---card-bg: #1f2937;
---text: #f9fafb;
---text-secondary: #9ca3af;
---border: #374151;
---toast-bg: #f9fafb;
---toast-text: #1f2937;
+--primary: #FF4500; /* Keep Reddit orange */
+--primary-hover: #e03d00;
+--background: #030303; /* Reddit dark background */
+--card-bg: #1A1A1B;
+--text: #D7DADC;
+--text-secondary: #818384;
+--border: #343536;
+--toast-bg: #D7DADC;
+--toast-text: #1A1A1B;
 }
 
 body {
 background-color: var(--background);
 color: var(--text);
+font-family: 'IBM Plex Sans', 'Noto Sans', 'Roboto', sans-serif;
 }
 
-/* Post card styling */
 .post-card {
 padding: 1rem;
 transition: background-color 0.2s;
+border: 1px solid var(--border);
+margin-bottom: 0.5rem;
 }
 
 .post-card:hover {
-background-color: rgba(0, 0, 0, 0.02);
+border-color: var(--primary);
 }
 
-.dark .post-card:hover {
-background-color: rgba(255, 255, 255, 0.05);
+.reddit-header {
+background-color: var(--card-bg);
+border-bottom: 1px solid var(--border);
 }
 
-/* Countdown animation */
+.reddit-button {
+background-color: var(--primary);
+color: white;
+font-weight: bold;
+border-radius: 9999px;
+}
+
+.reddit-button:hover {
+background-color: var(--primary-hover);
+}
+
+/* Animation styles and other styles remain the same */
 @keyframes pulse {
-0%, 100% {
-opacity: 1;
-}
-50% {
-opacity: 0.5;
-}
+0%, 100% { opacity: 1; }
+50% { opacity: 0.5; }
 }
 
 .pulse {
 animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Toast animation */
 @keyframes fadeIn {
-from {
-opacity: 0;
-transform: translateY(20px);
-}
-to {
-opacity: 1;
-transform: translateY(0);
-}
+from { opacity: 0; transform: translateY(20px); }
+to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeOut {
-from {
-opacity: 1;
-transform: translateY(0);
-}
-to {
-opacity: 0;
-transform: translateY(20px);
-}
+from { opacity: 1; transform: translateY(0); }
+to { opacity: 0; transform: translateY(20px); }
 }
 
-.fadeIn {
-animation: fadeIn 0.3s ease forwards;
+.fadeIn { animation: fadeIn 0.3s ease forwards; }
+.fadeOut { animation: fadeOut 0.3s ease forwards; }
+
+.subreddit-chip {
+cursor: pointer;
+transition: all 0.2s;
+border: 1px solid var(--border);
 }
 
-.fadeOut {
-animation: fadeOut 0.3s ease forwards;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-width: 8px;
-}
-
-::-webkit-scrollbar-track {
-background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-background-color: var(--text-secondary);
-border-radius: 20px;
-border: 3px solid transparent;
-}
-
-/* Button focus styles */
-button:focus,
-input:focus,
-select:focus {
-outline: 2px solid var(--primary);
-outline-offset: 2px;
-}
-
-/* Transition effects */
-.transition-all {
-transition-property: all;
-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-transition-duration: 300ms;
+.subreddit-chip:hover {
+background-color: var(--primary);
+color: white;
 }
 </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
-<div class="container mx-auto px-4 py-8">
-<header class="mb-8">
-<h1 class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">Reddit Post Monitor</h1>
-<p class="text-gray-600 dark:text-gray-400 mt-2">Monitor subreddits for specific post types</p>
+<!-- Reddit-style header -->
+<header class="reddit-header sticky top-0 z-10 px-4 py-2">
+<div class="container mx-auto flex items-center justify-between">
+<div class="flex items-center">
+<svg class="h-8 w-8 text-primary fill-current" viewBox="0 0 20 20">
+<path d="M10 0C4.478 0 0 4.478 0 10c0 5.523 4.478 10 10 10 5.523 0 10-4.477 10-10 0-5.522-4.477-10-10-10zm5.7 11.25c.06.218.081.44.061.661-.06.661-.366 1.235-.846 1.637-.48.4-1.145.622-1.827.622-.737 0-1.416-.246-1.956-.661-.54.415-1.22.661-1.956.661-.682 0-1.347-.222-1.827-.622-.48-.402-.786-.976-.846-1.637-.02-.22 0-.443.061-.661-.53-.354-.847-.942-.847-1.573 0-.698.347-1.309.878-1.677.53-.369 1.225-.502 1.877-.332.654-.894 1.615-1.464 2.66-1.464s2.006.57 2.66 1.464c.652-.17 1.347-.037 1.877.332.53.368.878.979.878 1.677 0 .631-.318 1.219-.847 1.573zM7.35 9.05c-.542 0-.983.441-.983.984 0 .542.44.983.983.983.541 0 .982-.44.982-.983 0-.543-.44-.984-.982-.984zm5.3 0c-.542 0-.983.441-.983.984 0 .542.44.983.983.983.541 0 .982-.44.982-.983 0-.543-.44-.984-.982-.984z"></path>
+</svg>
+<h1 class="ml-2 text-xl font-bold text-primary">Reddit Post Monitor</h1>
+</div>
+<button id="theme-toggle" class="p-2 rounded-full">
+<svg id="theme-toggle-dark-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+<path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+</svg>
+<svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+<path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+</svg>
+</button>
+</div>
 </header>
 
-<main>
+<div class="container mx-auto px-4 py-6">
+<main class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Left column - Settings & Recommended Subreddits -->
+<div class="md:col-span-1">
 <!-- Settings Card -->
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
 <h2 class="text-xl font-semibold mb-4">Monitor Settings</h2>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-<div>
+<div class="mb-4">
 <label class="block text-sm font-medium mb-1" for="subreddit">Subreddit</label>
 <input type="text" id="subreddit" value="Soundmap"
 class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
 </div>
-<div>
+<div class="mb-4">
 <label class="block text-sm font-medium mb-1" for="flair">Filter by Flair</label>
-<input type="text" id="flair" value="Giveaway"
+<input type="text" id="flair" value="N/A"
 class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
 </div>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-<div>
-<label class="block text-sm font-medium mb-1" for="checkInterval">Check Interval (minutes)</label>
+<div class="mb-4">
+<label class="block text-sm font-medium mb-1" for="checkInterval">Check Interval</label>
 <select id="checkInterval"
 class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
 <option value="1">1 minute</option>
@@ -161,22 +150,19 @@ class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white d
 <option value="60">1 hour</option>
 </select>
 </div>
-<div>
+<div class="mb-4">
 <label class="block text-sm font-medium mb-1" for="ntfyTopic">Ntfy.sh Topic</label>
 <input type="text" id="ntfyTopic" value="redditmonitor"
 class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
 </div>
-</div>
 <div class="flex items-center mb-4">
-<input type="checkbox" id="notifications" class="h-4 w-4 text-indigo-600" checked>
+<input type="checkbox" id="notifications" class="h-4 w-4 text-primary" checked>
 <label for="notifications" class="ml-2 block text-sm">Enable Notifications</label>
 </div>
-<div id="status-container" class="flex justify-between items-center">
-<div>
+<div class="flex justify-between items-center">
 <span id="next-check" class="text-sm text-gray-600 dark:text-gray-400">Next check in: 5:00</span>
-</div>
 <div class="flex space-x-2">
-<button id="save-settings" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded">
+<button id="save-settings" class="px-4 py-2 reddit-button">
 Save Settings
 </button>
 <button id="check-now" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded">
@@ -186,10 +172,27 @@ Check Now
 </div>
 </div>
 
+<!-- Recommended Subreddits Card -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+<h2 class="text-xl font-semibold mb-4">Popular Subreddits</h2>
+<div class="flex flex-wrap gap-2">
+<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="AskReddit">r/AskReddit</span>
+<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="mildlyinfuriating">r/mildlyinfuriating</span>
+<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="worldnews">r/worldnews</span>
+<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="funny">r/funny</span>
+<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="gaming">r/gaming</span>
+<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="pics">r/pics</span>
+<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="news">r/news</span>
+<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="aww">r/aww</span>
+<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="movies">r/movies</span>
+<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="explainlikeimfive">r/explainlikeimfive</span>
+</div>
+</div>
+
 <!-- Mobile Setup Card -->
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
 <div class="flex items-center mb-4">
-<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary" viewBox="0 0 20 20" fill="currentColor">
 <path fill-rule="evenodd" d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
 </svg>
 <h3 class="text-xl font-semibold">Mobile Setup</h3>
@@ -198,7 +201,7 @@ Check Now
 Get notifications on your phone using ntfy.sh
 </p>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-4">
 <div>
 <h4 class="font-medium mb-2">1. Download ntfy app</h4>
 <div class="flex space-x-2 mb-4">
@@ -232,17 +235,25 @@ iOS
 </div>
 </div>
 
-<a href="https://ntfy.sh/redditmonitor" target="_blank" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded mt-2">
+<a href="https://ntfy.sh/redditmonitor" target="_blank" class="inline-flex items-center px-4 py-2 reddit-button mt-2">
 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
 </svg>
 Open ntfy.sh Web Interface
 </a>
 </div>
+</div>
 
-<!-- Recent Posts -->
+<!-- Right column - Post Feed -->
+<div class="md:col-span-2">
+<!-- Recent Posts Card -->
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-<h2 class="text-xl font-semibold mb-4">Recent Posts</h2>
+<div class="flex justify-between items-center mb-4">
+<h2 class="text-xl font-semibold">Recent Posts</h2>
+<button id="check-now-feed" class="px-4 py-2 reddit-button text-sm">
+Check Now
+</button>
+</div>
 
 <div id="posts-container" class="divide-y divide-gray-200 dark:divide-gray-700">
 <!-- Posts will be loaded here -->
@@ -254,11 +265,13 @@ Open ntfy.sh Web Interface
 <p class="text-gray-500 dark:text-gray-400 mt-1">
 Recent posts will appear here when found
 </p>
-<button id="check-now-empty" class="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded inline-flex items-center">
-<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-</svg>
-Check Now
+</div>
+</div>
+
+<!-- Show More Button (initially hidden) -->
+<div id="show-more-container" class="mt-4 text-center hidden">
+<button id="show-more-posts" class="px-4 py-2 text-primary hover:underline">
+Show More Posts
 </button>
 </div>
 </div>
@@ -267,18 +280,8 @@ Check Now
 
 <footer class="mt-8 text-center text-gray-600 dark:text-gray-400 text-sm">
 <p>
-Monitor Reddit subreddits for specific posts and get notifications
+Reddit Post Monitor - Monitor your favorite subreddits for specific posts and get notifications
 </p>
-<div class="mt-2">
-<button id="theme-toggle" class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg p-2.5">
-<svg id="theme-toggle-dark-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-<path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-</svg>
-<svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-<path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
-</svg>
-</button>
-</div>
 </footer>
 </div>
 
@@ -298,7 +301,7 @@ const ntfyTopicInput = document.getElementById('ntfyTopic');
 const notificationsCheckbox = document.getElementById('notifications');
 const saveSettingsBtn = document.getElementById('save-settings');
 const checkNowBtn = document.getElementById('check-now');
-const checkNowEmptyBtn = document.getElementById('check-now-empty');
+const checkNowFeedBtn = document.getElementById('check-now-feed');
 const nextCheckSpan = document.getElementById('next-check');
 const postsContainer = document.getElementById('posts-container');
 const emptyState = document.getElementById('empty-state');
@@ -307,11 +310,14 @@ const copyTopicBtn = document.getElementById('copy-topic');
 const themeToggleBtn = document.getElementById('theme-toggle');
 const darkIcon = document.getElementById('theme-toggle-dark-icon');
 const lightIcon = document.getElementById('theme-toggle-light-icon');
+const subredditChips = document.querySelectorAll('.subreddit-chip');
+const showMoreContainer = document.getElementById('show-more-container');
+const showMoreBtn = document.getElementById('show-more-posts');
 
 // Settings
 const defaultSettings = {
 subreddit: 'Soundmap',
-flair: 'Giveaway',
+flair: 'N/A',
 checkInterval: 5,
 ntfyTopic: 'redditmonitor',
 notifications: true
@@ -321,6 +327,8 @@ let settings = loadSettings();
 let timer = null;
 let nextCheckTime = new Date();
 nextCheckTime.setMinutes(nextCheckTime.getMinutes() + settings.checkInterval);
+let allPosts = []; // Store all posts
+let visiblePostCount = 10; // Initial number of posts to show
 
 // Initialize UI
 initializeUI();
@@ -331,9 +339,18 @@ initializeTheme();
 // Event listeners
 saveSettingsBtn.addEventListener('click', saveSettings);
 checkNowBtn.addEventListener('click', checkForPosts);
-checkNowEmptyBtn.addEventListener('click', checkForPosts);
+checkNowFeedBtn.addEventListener('click', checkForPosts);
 copyTopicBtn.addEventListener('click', copyTopic);
 themeToggleBtn.addEventListener('click', toggleTheme);
+showMoreBtn.addEventListener('click', showMorePosts);
+
+// Add event listeners to subreddit chips
+subredditChips.forEach(chip => {
+chip.addEventListener('click', () => {
+subredditInput.value = chip.dataset.subreddit;
+saveSettings();
+});
+});
 
 // Functions
 function initializeUI() {
@@ -409,8 +426,8 @@ nextCheckSpan.textContent = 'Checking for posts...';
 nextCheckSpan.classList.add('pulse');
 
 try {
-// Use corsproxy.io instead of allorigins which has issues
-const redditUrl = `https://www.reddit.com/r/${settings.subreddit}/new.json?limit=10`;
+// Use corsproxy.io as it's more reliable
+const redditUrl = `https://www.reddit.com/r/${settings.subreddit}/new.json?limit=25`;
 const corsProxy = 'https://corsproxy.io/?';
 
 const response = await fetch(corsProxy + redditUrl);
@@ -421,9 +438,9 @@ throw new Error(`HTTP error! status: ${response.status}`);
 
 const data = await response.json();
 
-// Filter posts by flair (if set)
+// Filter posts by flair (if set and not N/A)
 let filteredPosts = data.data.children;
-if (settings.flair) {
+if (settings.flair && settings.flair !== 'N/A') {
 const flairLower = settings.flair.toLowerCase();
 filteredPosts = filteredPosts.filter(post =>
 post.data.link_flair_text &&
@@ -445,24 +462,26 @@ sendNotification(post.data);
 }
 }
 
-// Combine new posts with saved posts and keep the most recent 20
-const allPosts = [
+// Combine new posts with saved posts and keep the most recent ones
+allPosts = [
 ...newPosts.map(post => ({
 id: post.data.id,
 title: post.data.title,
 author: post.data.author,
 permalink: `https://www.reddit.com${post.data.permalink}`,
 created: post.data.created_utc * 1000, // Convert to milliseconds
-flair: post.data.link_flair_text || ''
+flair: post.data.link_flair_text || 'N/A',
+score: post.data.score || 0,
+thumbnail: post.data.thumbnail && post.data.thumbnail !== 'self' ? post.data.thumbnail : null
 })),
 ...savedPosts
-].sort((a, b) => b.created - a.created).slice(0, 20);
+].sort((a, b) => b.created - a.created).slice(0, 100); // Keep up to 100 posts in memory
 
 // Save the updated posts
 localStorage.setItem('cachedPosts', JSON.stringify(allPosts));
 
-// Display the posts
-displayPosts(allPosts);
+// Display the posts (but only first 10)
+displayPosts(allPosts.slice(0, visiblePostCount));
 
 // Show success message if new posts were found
 if (newPosts.length > 0) {
@@ -470,6 +489,9 @@ showToast(`Found ${newPosts.length} new post${newPosts.length > 1 ? 's' : ''}`);
 } else {
 showToast('No new posts found');
 }
+
+// Show/hide "Show More" button based on post count
+showMoreContainer.classList.toggle('hidden', allPosts.length <= visiblePostCount);
 } catch (error) {
 console.error('Error checking for posts:', error);
 showToast(`Error: ${error.message}. Try a different subreddit.`, true);
@@ -486,6 +508,7 @@ function displayPosts(posts) {
 // Show empty state if no posts
 if (posts.length === 0) {
 emptyState.style.display = 'block';
+showMoreContainer.classList.add('hidden');
 return;
 }
 
@@ -499,41 +522,110 @@ existingPosts.forEach(post => post.remove());
 // Create and append post elements
 posts.forEach(post => {
 const postElement = document.createElement('div');
-postElement.className = 'post-card';
+postElement.className = 'post-card rounded';
 
 // Format date
 const postDate = new Date(post.created);
 const timeAgo = formatTimeAgo(postDate);
 
+// Reddit-style post
 postElement.innerHTML = `
-<div class="flex items-start">
-<div class="mr-3 flex-shrink-0 mt-1">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-${post.flair || 'Post'}
-</span>
+<div class="flex">
+<!-- Vote arrows (for UI only) -->
+<div class="flex flex-col items-center mr-2">
+<svg class="w-5 h-5 text-gray-400 hover:text-vote-up cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+</svg>
+<span class="text-xs font-medium my-1">${post.score || 0}</span>
+<svg class="w-5 h-5 text-gray-400 hover:text-vote-down cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+</svg>
 </div>
-<div class="flex-1 min-w-0">
-<a href="${post.permalink}" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
+
+<!-- Main content -->
+<div class="flex-1">
+${post.thumbnail ? `
+<div class="flex">
+<div class="flex-1">
+<div class="mb-1 text-xs text-gray-500 dark:text-gray-400">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 mr-2">
+r/${settings.subreddit}
+</span>
+<span>Posted by u/${post.author}</span>
+<span class="mx-1">•</span>
+<span>${timeAgo}</span>
+</div>
+<a href="${post.permalink}" target="_blank" rel="noopener noreferrer" class="text-md font-medium hover:underline">
 ${post.title}
 </a>
-<div class="mt-1 flex items-center text-xs text-gray-500 dark:text-gray-400">
-<span>Posted by u/${post.author}</span>
-<span class="mx-2">•</span>
-<span>${timeAgo}</span>
+<div class="mt-1">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+${post.flair}
+</span>
 </div>
 </div>
 <div class="ml-2">
-<a href="${post.permalink}" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-</svg>
+<img src="${post.thumbnail}" alt="Thumbnail" class="w-16 h-16 object-cover rounded">
+</div>
+</div>
+` : `
+<div class="mb-1 text-xs text-gray-500 dark:text-gray-400">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 mr-2">
+r/${settings.subreddit}
+</span>
+<span>Posted by u/${post.author}</span>
+<span class="mx-1">•</span>
+<span>${timeAgo}</span>
+</div>
+<a href="${post.permalink}" target="_blank" rel="noopener noreferrer" class="text-md font-medium hover:underline">
+${post.title}
 </a>
+<div class="mt-1">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+${post.flair}
+</span>
+</div>
+`}
+
+<div class="flex mt-2 text-xs text-gray-500 dark:text-gray-400">
+<a href="${post.permalink}" target="_blank" rel="noopener noreferrer" class="mr-4 hover:text-primary">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+</svg>
+Comments
+</a>
+<a href="${post.permalink}" target="_blank" rel="noopener noreferrer" class="mr-4 hover:text-primary">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+</svg>
+Share
+</a>
+<a href="${post.permalink}" target="_blank" rel="noopener noreferrer" class="hover:text-primary">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+</svg>
+Save
+</a>
+</div>
 </div>
 </div>
 `;
 
 postsContainer.appendChild(postElement);
 });
+
+// Show or hide the "Show More" button
+showMoreContainer.classList.toggle('hidden', allPosts.length <= visiblePostCount);
+}
+
+function showMorePosts() {
+visiblePostCount += 10; // Show 10 more posts
+displayPosts(allPosts.slice(0, visiblePostCount));
+
+// Hide the button if we've shown all posts
+if (visiblePostCount >= allPosts.length) {
+showMoreContainer.classList.add('hidden');
+}
 }
 
 function formatTimeAgo(date) {
