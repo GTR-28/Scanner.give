@@ -3,13 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reddit Post Monitor</title>
+<title>Social Search</title>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <style>
 :root {
 --primary: #FF4500; /* Reddit orange */
 --primary-hover: #e03d00;
---background: #DAE0E6; /* Reddit light background */
+--secondary: #1DA1F2; /* Twitter blue */
+--secondary-hover: #0d8fd9;
+--tertiary: #4267B2; /* Facebook blue */
+--tertiary-hover: #365899;
+--background: #f5f5f5;
 --card-bg: #ffffff;
 --text: #1c1c1c;
 --text-secondary: #7c7c7c;
@@ -21,9 +25,13 @@
 }
 
 .dark {
---primary: #FF4500; /* Keep Reddit orange */
+--primary: #FF4500;
 --primary-hover: #e03d00;
---background: #030303; /* Reddit dark background */
+--secondary: #1DA1F2;
+--secondary-hover: #0d8fd9;
+--tertiary: #4267B2;
+--tertiary-hover: #365899;
+--background: #121212;
 --card-bg: #1A1A1B;
 --text: #D7DADC;
 --text-secondary: #818384;
@@ -49,7 +57,7 @@ margin-bottom: 0.5rem;
 border-color: var(--primary);
 }
 
-.reddit-header {
+.app-header {
 background-color: var(--card-bg);
 border-bottom: 1px solid var(--border);
 }
@@ -65,7 +73,23 @@ border-radius: 9999px;
 background-color: var(--primary-hover);
 }
 
-/* Animation styles and other styles remain the same */
+.platform-tab {
+cursor: pointer;
+transition: all 0.2s;
+border-bottom: 2px solid transparent;
+padding: 0.5rem 1rem;
+}
+
+.platform-tab.active {
+border-bottom-color: var(--primary);
+font-weight: bold;
+}
+
+.platform-tab:hover:not(.active) {
+border-bottom-color: var(--border);
+}
+
+/* Animation styles */
 @keyframes pulse {
 0%, 100% { opacity: 1; }
 50% { opacity: 0.5; }
@@ -88,27 +112,43 @@ to { opacity: 0; transform: translateY(20px); }
 .fadeIn { animation: fadeIn 0.3s ease forwards; }
 .fadeOut { animation: fadeOut 0.3s ease forwards; }
 
-.subreddit-chip {
+.chip {
 cursor: pointer;
 transition: all 0.2s;
 border: 1px solid var(--border);
 }
 
-.subreddit-chip:hover {
+.chip:hover {
 background-color: var(--primary);
 color: white;
+}
+
+/* Platform specific colors */
+.platform-reddit {
+--platform-color: var(--primary);
+--platform-hover: var(--primary-hover);
+}
+
+.platform-twitter {
+--platform-color: var(--secondary);
+--platform-hover: var(--secondary-hover);
+}
+
+.platform-facebook {
+--platform-color: var(--tertiary);
+--platform-hover: var(--tertiary-hover);
 }
 </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
-<!-- Reddit-style header -->
-<header class="reddit-header sticky top-0 z-10 px-4 py-2">
+<!-- App header -->
+<header class="app-header sticky top-0 z-10 px-4 py-2">
 <div class="container mx-auto flex items-center justify-between">
 <div class="flex items-center">
 <svg class="h-8 w-8 text-primary fill-current" viewBox="0 0 20 20">
 <path d="M10 0C4.478 0 0 4.478 0 10c0 5.523 4.478 10 10 10 5.523 0 10-4.477 10-10 0-5.522-4.477-10-10-10zm5.7 11.25c.06.218.081.44.061.661-.06.661-.366 1.235-.846 1.637-.48.4-1.145.622-1.827.622-.737 0-1.416-.246-1.956-.661-.54.415-1.22.661-1.956.661-.682 0-1.347-.222-1.827-.622-.48-.402-.786-.976-.846-1.637-.02-.22 0-.443.061-.661-.53-.354-.847-.942-.847-1.573 0-.698.347-1.309.878-1.677.53-.369 1.225-.502 1.877-.332.654-.894 1.615-1.464 2.66-1.464s2.006.57 2.66 1.464c.652-.17 1.347-.037 1.877.332.53.368.878.979.878 1.677 0 .631-.318 1.219-.847 1.573zM7.35 9.05c-.542 0-.983.441-.983.984 0 .542.44.983.983.983.541 0 .982-.44.982-.983 0-.543-.44-.984-.982-.984zm5.3 0c-.542 0-.983.441-.983.984 0 .542.44.983.983.983.541 0 .982-.44.982-.983 0-.543-.44-.984-.982-.984z"></path>
 </svg>
-<h1 class="ml-2 text-xl font-bold text-primary">Reddit Post Monitor</h1>
+<h1 class="ml-2 text-xl font-bold text-primary">Social Search</h1>
 </div>
 <button id="theme-toggle" class="p-2 rounded-full">
 <svg id="theme-toggle-dark-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -121,9 +161,43 @@ color: white;
 </div>
 </header>
 
+<!-- Platform tabs -->
+<div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+<div class="container mx-auto px-4">
+<div class="flex overflow-x-auto">
+<div class="platform-tab platform-reddit active" data-platform="reddit">
+<div class="flex items-center">
+<svg class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+<path d="M10 0C4.478 0 0 4.478 0 10c0 5.523 4.478 10 10 10 5.523 0 10-4.477 10-10 0-5.522-4.477-10-10-10zm5.7 11.25c.06.218.081.44.061.661-.06.661-.366 1.235-.846 1.637-.48.4-1.145.622-1.827.622-.737 0-1.416-.246-1.956-.661-.54.415-1.22.661-1.956.661-.682 0-1.347-.222-1.827-.622-.48-.402-.786-.976-.846-1.637-.02-.22 0-.443.061-.661-.53-.354-.847-.942-.847-1.573 0-.698.347-1.309.878-1.677.53-.369 1.225-.502 1.877-.332.654-.894 1.615-1.464 2.66-1.464s2.006.57 2.66 1.464c.652-.17 1.347-.037 1.877.332.53.368.878.979.878 1.677 0 .631-.318 1.219-.847 1.573zM7.35 9.05c-.542 0-.983.441-.983.984 0 .542.44.983.983.983.541 0 .982-.44.982-.983 0-.543-.44-.984-.982-.984zm5.3 0c-.542 0-.983.441-.983.984 0 .542.44.983.983.983.541 0 .982-.44.982-.983 0-.543-.44-.984-.982-.984z"></path>
+</svg>
+Reddit
+</div>
+</div>
+<div class="platform-tab platform-twitter" data-platform="twitter">
+<div class="flex items-center">
+<svg class="h-5 w-5 mr-1" viewBox="0 0 24 24" fill="currentColor">
+<path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+</svg>
+Twitter
+<span class="ml-1 text-xs text-gray-500">(Coming soon)</span>
+</div>
+</div>
+<div class="platform-tab platform-facebook" data-platform="facebook">
+<div class="flex items-center">
+<svg class="h-5 w-5 mr-1" viewBox="0 0 24 24" fill="currentColor">
+<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+</svg>
+Facebook
+<span class="ml-1 text-xs text-gray-500">(Coming soon)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="container mx-auto px-4 py-6">
 <main class="grid grid-cols-1 md:grid-cols-3 gap-6">
-<!-- Left column - Settings & Recommended Subreddits -->
+<!-- Left column - Settings & Recommended Sources -->
 <div class="md:col-span-1">
 <!-- Settings Card -->
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
@@ -172,33 +246,33 @@ Check Now
 </div>
 </div>
 
-<!-- Recommended Subreddits Card -->
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+<!-- Recommended Sources Card -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6" id="recommended-sources">
 <h2 class="text-xl font-semibold mb-4">Popular Subreddits</h2>
 <div class="flex flex-wrap gap-2">
-<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="AskReddit">r/AskReddit</span>
-<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="mildlyinfuriating">r/mildlyinfuriating</span>
-<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="worldnews">r/worldnews</span>
-<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="funny">r/funny</span>
-<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="gaming">r/gaming</span>
-<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="pics">r/pics</span>
-<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="news">r/news</span>
-<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="aww">r/aww</span>
-<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="movies">r/movies</span>
-<span class="subreddit-chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-subreddit="explainlikeimfive">r/explainlikeimfive</span>
+<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="AskReddit">r/AskReddit</span>
+<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="mildlyinfuriating">r/mildlyinfuriating</span>
+<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="worldnews">r/worldnews</span>
+<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="funny">r/funny</span>
+<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="gaming">r/gaming</span>
+<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="pics">r/pics</span>
+<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="news">r/news</span>
+<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="aww">r/aww</span>
+<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="movies">r/movies</span>
+<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="explainlikeimfive">r/explainlikeimfive</span>
 </div>
 </div>
 
-<!-- Mobile Setup Card -->
+<!-- Notification Setup Card -->
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
 <div class="flex items-center mb-4">
 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary" viewBox="0 0 20 20" fill="currentColor">
 <path fill-rule="evenodd" d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
 </svg>
-<h3 class="text-xl font-semibold">Mobile Setup</h3>
+<h3 class="text-xl font-semibold">Mobile Notifications</h3>
 </div>
 <p class="mb-4 text-gray-600 dark:text-gray-400">
-Get notifications on your phone using ntfy.sh
+Get alerts on your phone using ntfy.sh
 </p>
 
 <div class="space-y-4">
@@ -235,7 +309,7 @@ iOS
 </div>
 </div>
 
-<a href="https://ntfy.sh/redditmonitor" target="_blank" class="inline-flex items-center px-4 py-2 reddit-button mt-2">
+<a href="https://ntfy.sh/redditmonitor" target="_blank" id="ntfy-link" class="inline-flex items-center px-4 py-2 reddit-button mt-2">
 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
 </svg>
@@ -246,7 +320,7 @@ Open ntfy.sh Web Interface
 
 <!-- Right column - Post Feed -->
 <div class="md:col-span-2">
-<!-- Recent Posts Card -->
+<!-- Posts Card -->
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
 <div class="flex justify-between items-center mb-4">
 <h2 class="text-xl font-semibold">Recent Posts</h2>
@@ -263,7 +337,7 @@ Check Now
 </svg>
 <h3 class="text-lg font-medium">No posts yet</h3>
 <p class="text-gray-500 dark:text-gray-400 mt-1">
-Recent posts will appear here when found
+Content from your selected platforms will appear here
 </p>
 </div>
 </div>
@@ -280,7 +354,7 @@ Show More Posts
 
 <footer class="mt-8 text-center text-gray-600 dark:text-gray-400 text-sm">
 <p>
-Reddit Post Monitor - Monitor your favorite subreddits for specific posts and get notifications
+Social Search - Monitor your favorite social media platforms for specific content
 </p>
 </footer>
 </div>
@@ -310,16 +384,20 @@ const copyTopicBtn = document.getElementById('copy-topic');
 const themeToggleBtn = document.getElementById('theme-toggle');
 const darkIcon = document.getElementById('theme-toggle-dark-icon');
 const lightIcon = document.getElementById('theme-toggle-light-icon');
-const subredditChips = document.querySelectorAll('.subreddit-chip');
+const chips = document.querySelectorAll('.chip');
 const showMoreContainer = document.getElementById('show-more-container');
 const showMoreBtn = document.getElementById('show-more-posts');
+const platformTabs = document.querySelectorAll('.platform-tab');
+const ntfyLink = document.getElementById('ntfy-link');
+const recommendedSources = document.getElementById('recommended-sources');
 
 // Settings
 const defaultSettings = {
+platform: 'reddit',
 subreddit: 'Soundmap',
 flair: 'N/A',
 checkInterval: 5,
-ntfyTopic: 'redditmonitor',
+ntfyTopic: 'socialsearch',
 notifications: true
 };
 
@@ -329,12 +407,14 @@ let nextCheckTime = new Date();
 nextCheckTime.setMinutes(nextCheckTime.getMinutes() + settings.checkInterval);
 let allPosts = []; // Store all posts
 let visiblePostCount = 10; // Initial number of posts to show
+let currentPlatform = settings.platform || 'reddit';
 
 // Initialize UI
 initializeUI();
 startTimer();
 checkForPosts();
 initializeTheme();
+updatePlatformUI(currentPlatform);
 
 // Event listeners
 saveSettingsBtn.addEventListener('click', saveSettings);
@@ -344,11 +424,37 @@ copyTopicBtn.addEventListener('click', copyTopic);
 themeToggleBtn.addEventListener('click', toggleTheme);
 showMoreBtn.addEventListener('click', showMorePosts);
 
-// Add event listeners to subreddit chips
-subredditChips.forEach(chip => {
+// Add event listeners to chips
+chips.forEach(chip => {
 chip.addEventListener('click', () => {
-subredditInput.value = chip.dataset.subreddit;
+subredditInput.value = chip.dataset.source;
 saveSettings();
+});
+});
+
+// Add event listeners to platform tabs
+platformTabs.forEach(tab => {
+tab.addEventListener('click', () => {
+if (tab.classList.contains('active') || tab.querySelector('span')) {
+return; // Skip if already active or has "coming soon" tag
+}
+
+const platform = tab.dataset.platform;
+currentPlatform = platform;
+
+// Update active tab
+platformTabs.forEach(t => t.classList.remove('active'));
+tab.classList.add('active');
+
+// Update UI for the selected platform
+updatePlatformUI(platform);
+
+// Update settings
+settings.platform = platform;
+localStorage.setItem('socialSearchSettings', JSON.stringify(settings));
+
+// Clear posts when changing platforms
+clearPosts();
 });
 });
 
@@ -360,18 +466,19 @@ checkIntervalSelect.value = settings.checkInterval;
 ntfyTopicInput.value = settings.ntfyTopic;
 notificationsCheckbox.checked = settings.notifications;
 topicDisplay.textContent = settings.ntfyTopic;
-
-// Update ntfy.sh link
-document.querySelector('a[href^="https://ntfy.sh/"]').href = `https://ntfy.sh/${settings.ntfyTopic}`;
+ntfyLink.href = `https://ntfy.sh/${settings.ntfyTopic}`;
 }
 
 function loadSettings() {
-const savedSettings = localStorage.getItem('redditMonitorSettings');
+const savedSettings = localStorage.getItem('socialSearchSettings');
 return savedSettings ? JSON.parse(savedSettings) : defaultSettings;
 }
 
 function saveSettings() {
+const oldSettings = {...settings};
+
 settings = {
+...settings,
 subreddit: subredditInput.value.trim(),
 flair: flairInput.value.trim(),
 checkInterval: parseInt(checkIntervalSelect.value),
@@ -379,19 +486,90 @@ ntfyTopic: ntfyTopicInput.value.trim(),
 notifications: notificationsCheckbox.checked
 };
 
-localStorage.setItem('redditMonitorSettings', JSON.stringify(settings));
+localStorage.setItem('socialSearchSettings', JSON.stringify(settings));
 showToast('Settings saved successfully');
 
 // Update UI
 topicDisplay.textContent = settings.ntfyTopic;
-document.querySelector('a[href^="https://ntfy.sh/"]').href = `https://ntfy.sh/${settings.ntfyTopic}`;
+ntfyLink.href = `https://ntfy.sh/${settings.ntfyTopic}`;
 
 // Reset timer
 clearInterval(timer);
 startTimer();
 
+// If subreddit or flair changed, clear existing posts that don't match new settings
+if (oldSettings.subreddit !== settings.subreddit ||
+oldSettings.flair !== settings.flair) {
+clearPostsThatDontMatchSettings();
+}
+
 // Check for posts with new settings
 checkForPosts();
+}
+
+function updatePlatformUI(platform) {
+// Update UI based on selected platform
+switch(platform) {
+case 'reddit':
+document.querySelector('label[for="subreddit"]').textContent = 'Subreddit';
+document.querySelector('label[for="flair"]').textContent = 'Filter by Flair';
+recommendedSources.querySelector('h2').textContent = 'Popular Subreddits';
+chips.forEach(chip => {
+chip.textContent = `r/${chip.dataset.source}`;
+});
+break;
+case 'twitter':
+document.querySelector('label[for="subreddit"]').textContent = 'Username/Hashtag';
+document.querySelector('label[for="flair"]').textContent = 'Keywords';
+recommendedSources.querySelector('h2').textContent = 'Popular Twitter Accounts';
+chips.forEach(chip => {
+chip.textContent = `@${chip.dataset.source}`;
+});
+break;
+case 'facebook':
+document.querySelector('label[for="subreddit"]').textContent = 'Page/Group';
+document.querySelector('label[for="flair"]').textContent = 'Keywords';
+recommendedSources.querySelector('h2').textContent = 'Popular Facebook Pages';
+chips.forEach(chip => {
+chip.textContent = `${chip.dataset.source}`;
+});
+break;
+}
+}
+
+function clearPostsThatDontMatchSettings() {
+// Keep only posts that match current settings
+if (allPosts.length > 0) {
+const filteredPosts = allPosts.filter(post => {
+// Keep posts from the current subreddit
+if (post.subreddit.toLowerCase() !== settings.subreddit.toLowerCase()) {
+return false;
+}
+
+// If flair filter is set (and not N/A), check it too
+if (settings.flair && settings.flair !== 'N/A') {
+return post.flair && post.flair.toLowerCase().includes(settings.flair.toLowerCase());
+}
+
+return true;
+});
+
+// Update allPosts and localStorage
+allPosts = filteredPosts;
+localStorage.setItem('cachedPosts', JSON.stringify(allPosts));
+
+// Display the filtered posts
+displayPosts(allPosts.slice(0, visiblePostCount));
+}
+}
+
+function clearPosts() {
+allPosts = [];
+localStorage.setItem('cachedPosts', JSON.stringify(allPosts));
+postsContainer.innerHTML = '';
+postsContainer.appendChild(emptyState);
+emptyState.style.display = 'block';
+showMoreContainer.classList.add('hidden');
 }
 
 function startTimer() {
@@ -420,7 +598,23 @@ const seconds = Math.floor((diffMs % 60000) / 1000);
 nextCheckSpan.textContent = `Next check in: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 }
 
+function showMorePosts() {
+visiblePostCount += 10;
+displayPosts(allPosts.slice(0, visiblePostCount));
+
+// Hide "Show More" button if all posts are now visible
+if (visiblePostCount >= allPosts.length) {
+showMoreContainer.classList.add('hidden');
+}
+}
+
 async function checkForPosts() {
+// Currently only Reddit is implemented
+if (currentPlatform !== 'reddit') {
+showToast(`${currentPlatform.charAt(0).toUpperCase() + currentPlatform.slice(1)} integration coming soon`, true);
+return;
+}
+
 // Show checking state
 nextCheckSpan.textContent = 'Checking for posts...';
 nextCheckSpan.classList.add('pulse');
@@ -462,26 +656,53 @@ sendNotification(post.data);
 }
 }
 
-// Combine new posts with saved posts and keep the most recent ones
-allPosts = [
-...newPosts.map(post => ({
+// Transform new posts to our format
+const formattedNewPosts = newPosts.map(post => ({
 id: post.data.id,
 title: post.data.title,
 author: post.data.author,
+subreddit: settings.subreddit,
 permalink: `https://www.reddit.com${post.data.permalink}`,
 created: post.data.created_utc * 1000, // Convert to milliseconds
 flair: post.data.link_flair_text || 'N/A',
 score: post.data.score || 0,
-thumbnail: post.data.thumbnail && post.data.thumbnail !== 'self' ? post.data.thumbnail : null
-})),
-...savedPosts
-].sort((a, b) => b.created - a.created).slice(0, 100); // Keep up to 100 posts in memory
+thumbnail: post.data.thumbnail && post.data.thumbnail !== 'self' ? post.data.thumbnail : null,
+platform: 'reddit'
+}));
+
+// Combine new posts with saved posts that match current settings
+const matchingPosts = savedPosts.filter(post => {
+// Match platform
+if (post.platform !== currentPlatform) {
+return false;
+}
+
+// Match subreddit (case insensitive)
+if (post.subreddit.toLowerCase() !== settings.subreddit.toLowerCase()) {
+return false;
+}
+
+// Match flair if specified (and not N/A)
+if (settings.flair && settings.flair !== 'N/A') {
+return post.flair && post.flair.toLowerCase().includes(settings.flair.toLowerCase());
+}
+
+return true;
+});
+
+// Combine matching posts with new posts
+allPosts = [...formattedNewPosts, ...matchingPosts]
+.sort((a, b) => b.created - a.created)
+.slice(0, 100); // Keep up to 100 posts in memory
 
 // Save the updated posts
 localStorage.setItem('cachedPosts', JSON.stringify(allPosts));
 
-// Display the posts (but only first 10)
+// Display the posts (but only first batch)
 displayPosts(allPosts.slice(0, visiblePostCount));
+
+// Show/hide "Show More" button based on post count
+showMoreContainer.classList.toggle('hidden', allPosts.length <= visiblePostCount);
 
 // Show success message if new posts were found
 if (newPosts.length > 0) {
@@ -489,9 +710,6 @@ showToast(`Found ${newPosts.length} new post${newPosts.length > 1 ? 's' : ''}`);
 } else {
 showToast('No new posts found');
 }
-
-// Show/hide "Show More" button based on post count
-showMoreContainer.classList.toggle('hidden', allPosts.length <= visiblePostCount);
 } catch (error) {
 console.error('Error checking for posts:', error);
 showToast(`Error: ${error.message}. Try a different subreddit.`, true);
@@ -528,6 +746,7 @@ postElement.className = 'post-card rounded';
 const postDate = new Date(post.created);
 const timeAgo = formatTimeAgo(postDate);
 
+if (post.platform === 'reddit') {
 // Reddit-style post
 postElement.innerHTML = `
 <div class="flex">
@@ -549,7 +768,7 @@ ${post.thumbnail ? `
 <div class="flex-1">
 <div class="mb-1 text-xs text-gray-500 dark:text-gray-400">
 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 mr-2">
-r/${settings.subreddit}
+r/${post.subreddit}
 </span>
 <span>Posted by u/${post.author}</span>
 <span class="mx-1">•</span>
@@ -571,7 +790,7 @@ ${post.flair}
 ` : `
 <div class="mb-1 text-xs text-gray-500 dark:text-gray-400">
 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 mr-2">
-r/${settings.subreddit}
+r/${post.subreddit}
 </span>
 <span>Posted by u/${post.author}</span>
 <span class="mx-1">•</span>
@@ -586,46 +805,62 @@ ${post.flair}
 </span>
 </div>
 `}
-
-<div class="flex mt-2 text-xs text-gray-500 dark:text-gray-400">
-<a href="${post.permalink}" target="_blank" rel="noopener noreferrer" class="mr-4 hover:text-primary">
-<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-</svg>
-Comments
-</a>
-<a href="${post.permalink}" target="_blank" rel="noopener noreferrer" class="mr-4 hover:text-primary">
-<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-</svg>
-Share
-</a>
-<a href="${post.permalink}" target="_blank" rel="noopener noreferrer" class="hover:text-primary">
-<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-</svg>
-Save
-</a>
+</div>
+</div>
+`;
+} else if (post.platform === 'twitter') {
+// Twitter-style post (placeholder for now)
+postElement.innerHTML = `
+<div class="flex">
+<div class="flex-shrink-0 mr-3">
+<div class="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white">
+${post.author.charAt(0).toUpperCase()}
+</div>
+</div>
+<div>
+<div class="flex items-center mb-1">
+<span class="font-bold mr-1">${post.author}</span>
+<span class="text-gray-500 dark:text-gray-400">@${post.author}</span>
+<span class="mx-1 text-gray-500 dark:text-gray-400">•</span>
+<span class="text-gray-500 dark:text-gray-400">${timeAgo}</span>
+</div>
+<div class="mb-2">${post.title}</div>
+${post.thumbnail ? `<img src="${post.thumbnail}" alt="Media" class="rounded-lg w-full max-h-80 object-cover mb-2">` : ''}
+<div class="flex justify-between text-gray-500 dark:text-gray-400">
+<span>💬</span>
+<span>🔄</span>
+<span>❤️</span>
+<span>📤</span>
 </div>
 </div>
 </div>
 `;
+} else if (post.platform === 'facebook') {
+// Facebook-style post (placeholder for now)
+postElement.innerHTML = `
+<div>
+<div class="flex items-center mb-3">
+<div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white mr-3">
+${post.author.charAt(0).toUpperCase()}
+</div>
+<div>
+<div class="font-bold">${post.author}</div>
+<div class="text-xs text-gray-500 dark:text-gray-400">${timeAgo}</div>
+</div>
+</div>
+<div class="mb-3">${post.title}</div>
+${post.thumbnail ? `<img src="${post.thumbnail}" alt="Media" class="rounded-lg w-full max-h-80 object-cover mb-3">` : ''}
+<div class="flex justify-between border-t border-b py-2 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
+<span>👍 Like</span>
+<span>💬 Comment</span>
+<span>📤 Share</span>
+</div>
+</div>
+`;
+}
 
 postsContainer.appendChild(postElement);
 });
-
-// Show or hide the "Show More" button
-showMoreContainer.classList.toggle('hidden', allPosts.length <= visiblePostCount);
-}
-
-function showMorePosts() {
-visiblePostCount += 10; // Show 10 more posts
-displayPosts(allPosts.slice(0, visiblePostCount));
-
-// Hide the button if we've shown all posts
-if (visiblePostCount >= allPosts.length) {
-showMoreContainer.classList.add('hidden');
-}
 }
 
 function formatTimeAgo(date) {
@@ -656,18 +891,22 @@ return 'just now';
 
 async function sendNotification(post) {
 try {
+const platformName = currentPlatform.charAt(0).toUpperCase() + currentPlatform.slice(1);
+
 // Send notification using ntfy.sh
-const message = `New Post in r/${settings.subreddit}: ${post.title}`;
+const message = `New ${platformName} Post: ${post.title}`;
 const topic = settings.ntfyTopic;
 
 await fetch(`https://ntfy.sh/${topic}`, {
 method: 'POST',
 body: message,
 headers: {
-'Title': 'Reddit Post Alert',
-'Tags': 'reddit',
+'Title': `${platformName} Alert`,
+'Tags': currentPlatform === 'reddit' ? 'reddit' :
+currentPlatform === 'twitter' ? 'bird' :
+'bell',
 'Priority': '3',
-'Click': `https://www.reddit.com${post.permalink}`
+'Click': post.permalink || ''
 }
 });
 
