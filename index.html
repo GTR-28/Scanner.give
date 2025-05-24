@@ -1,844 +1,649 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reddit Giveaway Monitor</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      :root {
-        --primary: #6366f1;
-        --primary-hover: #4f46e5;
-        --background: #f9fafb;
-        --card-bg: #ffffff;
-        --text: #1f2937;
-        --text-secondary: #6b7280;
-        --border: #e5e7eb;
-        --toast-bg: #1f2937;
-        --toast-text: #ffffff;
-      }
-
-      .dark {
-        --primary: #818cf8;
-        --primary-hover: #6366f1;
-        --background: #111827;
-        --card-bg: #1f2937;
-        --text: #f9fafb;
-        --text-secondary: #9ca3af;
-        --border: #374151;
-        --toast-bg: #f9fafb;
-        --toast-text: #1f2937;
-      }
-
-      /* Post card styling */
-      .post-card {
-        padding: 1rem;
-        transition: background-color 0.2s;
-      }
-
-      .post-card:hover {
-        background-color: rgba(0, 0, 0, 0.02);
-      }
-
-      .dark .post-card:hover {
-        background-color: rgba(255, 255, 255, 0.05);
-      }
-
-      /* Countdown animation */
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.5;
-        }
-      }
-
-      .pulse {
-        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-      }
-
-      /* Toast animation */
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @keyframes fadeOut {
-        from {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        to {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-      }
-
-      .fadeIn {
-        animation: fadeIn 0.3s ease forwards;
-      }
-
-      .fadeOut {
-        animation: fadeOut 0.3s ease forwards;
-      }
-
-      /* Custom scrollbar */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-
-      ::-webkit-scrollbar-track {
-        background: transparent;
-      }
-
-      ::-webkit-scrollbar-thumb {
-        background-color: var(--text-secondary);
-        border-radius: 20px;
-        border: 3px solid transparent;
-      }
-
-      /* Button focus styles */
-      button:focus,
-      input:focus,
-      select:focus {
-        outline: 2px solid var(--primary);
-        outline-offset: 2px;
-      }
-
-      /* Transition effects */
-      .transition-all {
-        transition-property: all;
-        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-        transition-duration: 300ms;
-      }
-    </style>
-  </head>
-  <body
-    class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen"
-  >
-    <div class="container mx-auto px-4 py-8">
-      <header class="mb-8">
-        <h1 class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
-          Reddit Giveaway Monitor
-        </h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-2">
-          Monitor the Soundmap subreddit for giveaway posts
-        </p>
-      </header>
-
-      <main>
-        <!-- Settings Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-          <h2 class="text-xl font-semibold mb-4">Monitor Settings</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block text-sm font-medium mb-1" for="subreddit"
-                >Subreddit</label
-              >
-              <input
-                type="text"
-                id="subreddit"
-                value="Soundmap"
-                class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1" for="flair"
-                >Filter by Flair</label
-              >
-              <input
-                type="text"
-                id="flair"
-                value="Giveaway"
-                class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
-              />
-            </div>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block text-sm font-medium mb-1" for="checkInterval"
-                >Check Interval (minutes)</label
-              >
-              <select
-                id="checkInterval"
-                class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
-              >
-                <option value="1">1 minute</option>
-                <option value="5" selected>5 minutes</option>
-                <option value="10">10 minutes</option>
-                <option value="15">15 minutes</option>
-                <option value="30">30 minutes</option>
-                <option value="60">1 hour</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1" for="ntfyTopic"
-                >Ntfy.sh Topic</label
-              >
-              <input
-                type="text"
-                id="ntfyTopic"
-                value="redditmonitor"
-                class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
-              />
-            </div>
-          </div>
-          <div class="flex items-center mb-4">
-            <input
-              type="checkbox"
-              id="notifications"
-              class="h-4 w-4 text-indigo-600"
-              checked
-            />
-            <label for="notifications" class="ml-2 block text-sm"
-              >Enable Notifications</label
-            >
-          </div>
-          <div id="status-container" class="flex justify-between items-center">
-            <div>
-              <span
-                id="next-check"
-                class="text-sm text-gray-600 dark:text-gray-400"
-                >Next check in: 5:00</span
-              >
-            </div>
-            <div class="flex space-x-2">
-              <button
-                id="save-settings"
-                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded"
-              >
-                Save Settings
-              </button>
-              <button
-                id="check-now"
-                class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded"
-              >
-                Check Now
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Mobile Setup Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-          <div class="flex items-center mb-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5 mr-2 text-indigo-600"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            <h3 class="text-xl font-semibold">Mobile Setup</h3>
-          </div>
-          <p class="mb-4 text-gray-600 dark:text-gray-400">
-            Get notifications on your phone using ntfy.sh
-          </p>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 class="font-medium mb-2">1. Download ntfy app</h4>
-              <div class="flex space-x-2 mb-4">
-                <a
-                  href="https://play.google.com/store/apps/details?id=io.heckel.ntfy"
-                  target="_blank"
-                  class="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-sm rounded flex items-center"
-                >
-                  <svg
-                    class="h-5 w-5 mr-1"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M17.523 15.334c-.47.322-1.175.798-2.011 1.394-2.699 1.928-5.777 4.542-5.88 4.643a3.047 3.047 0 0 1-1.139.752c-.059.021-.119.04-.179.058V4.101c.059.018.119.037.179.058.41.14.798.361 1.139.752.103.101 3.172 2.704 5.88 4.643.846.605 1.553 1.082 2.011 1.394.459.313.57.573.6.728L18 12c0 .155-.53.415-.477.728"
-                    ></path>
-                  </svg>
-                  Android
-                </a>
-                <a
-                  href="https://apps.apple.com/us/app/ntfy/id1625396347"
-                  target="_blank"
-                  class="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-sm rounded flex items-center"
-                >
-                  <svg
-                    class="h-5 w-5 mr-1"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M14.94 5.19A4.38 4.38 0 0 0 16 2a4.44 4.44 0 0 0-3 1.52 4.17 4.17 0 0 0-1 3.09 3.69 3.69 0 0 0 2.94-1.42zm2.52 7.44A4.51 4.51 0 0 1 19 16.5a11.11 11.11 0 0 1-1.62 3.25c-1.08 1.56-2.19 3.25-3.82 3.25s-2.12-1.31-4.12-1.31c-1.87 0-2.5 1.35-4.06 1.35S2.06 20.94 1 19.34a11.19 11.19 0 0 1 5.06-9.5 5.35 5.35 0 0 1 4.44 0A4.71 4.71 0 0 0 12.54 9a4.43 4.43 0 0 0 2.6-1.25A4.2 4.2 0 0 1 18 10.75a4 4 0 0 1-1.54 1.88"
-                    ></path>
-                  </svg>
-                  iOS
-                </a>
-              </div>
-            </div>
-
-            <div>
-              <h4 class="font-medium mb-2">2. Subscribe to the topic</h4>
-              <div class="flex space-x-2 mb-4">
-                <div
-                  class="flex-1 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded font-mono text-sm"
-                >
-                  <span id="topic-display">redditmonitor</span>
-                </div>
-                <button
-                  id="copy-topic"
-                  class="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <a
-            href="https://ntfy.sh/redditmonitor"
-            target="_blank"
-            class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded mt-2"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5 mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-              />
-            </svg>
-            Open ntfy.sh Web Interface
-          </a>
-        </div>
-
-        <!-- Recent Posts -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-          <h2 class="text-xl font-semibold mb-4">Recent Posts</h2>
-
-          <div
-            id="posts-container"
-            class="divide-y divide-gray-200 dark:divide-gray-700"
-          >
-            <!-- Posts will be loaded here -->
-            <div class="text-center py-10" id="empty-state">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-12 w-12 mx-auto text-gray-400 mb-3"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                />
-              </svg>
-              <h3 class="text-lg font-medium">No posts yet</h3>
-              <p class="text-gray-500 dark:text-gray-400 mt-1">
-                Recent giveaway posts will appear here when found
-              </p>
-              <button
-                id="check-now-empty"
-                class="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded inline-flex items-center"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5 mr-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
-                Check Now
-              </button>
-            </div>
-          </div>
-        </div>
-      </main>
-
-      <footer class="mt-8 text-center text-gray-600 dark:text-gray-400 text-sm">
-        <p>
-          Monitor the Soundmap subreddit for giveaway posts and get
-          notifications
-        </p>
-        <div class="mt-2">
-          <button
-            id="theme-toggle"
-            class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg p-2.5"
-          >
-            <svg
-              id="theme-toggle-dark-icon"
-              class="hidden w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"
-              ></path>
-            </svg>
-            <svg
-              id="theme-toggle-light-icon"
-              class="hidden w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-              ></path>
-            </svg>
-          </button>
-        </div>
-      </footer>
-    </div>
-
-    <div
-      id="toast"
-      class="fixed right-4 bottom-4 z-50 opacity-0 transition-opacity duration-300 hidden"
-    >
-      <div class="bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg">
-        <span id="toast-message">Message here</span>
-      </div>
-    </div>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        // DOM elements
-        const subredditInput = document.getElementById("subreddit");
-        const flairInput = document.getElementById("flair");
-        const checkIntervalSelect = document.getElementById("checkInterval");
-        const ntfyTopicInput = document.getElementById("ntfyTopic");
-        const notificationsCheckbox = document.getElementById("notifications");
-        const saveSettingsBtn = document.getElementById("save-settings");
-        const checkNowBtn = document.getElementById("check-now");
-        const checkNowEmptyBtn = document.getElementById("check-now-empty");
-        const nextCheckSpan = document.getElementById("next-check");
-        const postsContainer = document.getElementById("posts-container");
-        const emptyState = document.getElementById("empty-state");
-        const topicDisplay = document.getElementById("topic-display");
-        const copyTopicBtn = document.getElementById("copy-topic");
-        const themeToggleBtn = document.getElementById("theme-toggle");
-        const darkIcon = document.getElementById("theme-toggle-dark-icon");
-        const lightIcon = document.getElementById("theme-toggle-light-icon");
-
-        // Settings
-        const defaultSettings = {
-          subreddit: "Soundmap",
-          flair: "Giveaway",
-          checkInterval: 5,
-          ntfyTopic: "redditmonitor",
-          notifications: true,
-        };
-
-        let settings = loadSettings();
-        let timer = null;
-        let nextCheckTime = new Date();
-        nextCheckTime.setMinutes(
-          nextCheckTime.getMinutes() + settings.checkInterval,
-        );
-
-        // Initialize UI
-        initializeUI();
-        startTimer();
-        checkForPosts();
-        initializeTheme();
-
-        // Event listeners
-        saveSettingsBtn.addEventListener("click", saveSettings);
-        checkNowBtn.addEventListener("click", checkForPosts);
-        checkNowEmptyBtn.addEventListener("click", checkForPosts);
-        copyTopicBtn.addEventListener("click", copyTopic);
-        themeToggleBtn.addEventListener("click", toggleTheme);
-
-        // Functions
-        function initializeUI() {
-          subredditInput.value = settings.subreddit;
-          flairInput.value = settings.flair;
-          checkIntervalSelect.value = settings.checkInterval;
-          ntfyTopicInput.value = settings.ntfyTopic;
-          notificationsCheckbox.checked = settings.notifications;
-          topicDisplay.textContent = settings.ntfyTopic;
-
-          // Update ntfy.sh link
-          document.querySelector('a[href^="https://ntfy.sh/"]').href =
-            `https://ntfy.sh/${settings.ntfyTopic}`;
-        }
-
-        function loadSettings() {
-          const savedSettings = localStorage.getItem("redditMonitorSettings");
-          return savedSettings ? JSON.parse(savedSettings) : defaultSettings;
-        }
-
-        function saveSettings() {
-          settings = {
-            subreddit: subredditInput.value.trim(),
-            flair: flairInput.value.trim(),
-            checkInterval: parseInt(checkIntervalSelect.value),
-            ntfyTopic: ntfyTopicInput.value.trim(),
-            notifications: notificationsCheckbox.checked,
-          };
-
-          localStorage.setItem(
-            "redditMonitorSettings",
-            JSON.stringify(settings),
-          );
-          showToast("Settings saved successfully");
-
-          // Update UI
-          topicDisplay.textContent = settings.ntfyTopic;
-          document.querySelector('a[href^="https://ntfy.sh/"]').href =
-            `https://ntfy.sh/${settings.ntfyTopic}`;
-
-          // Reset timer
-          clearInterval(timer);
-          startTimer();
-
-          // Check for posts with new settings
-          checkForPosts();
-        }
-
-        function startTimer() {
-          // Calculate next check time
-          nextCheckTime = new Date();
-          nextCheckTime.setMinutes(
-            nextCheckTime.getMinutes() + parseInt(settings.checkInterval),
-          );
-
-          // Update countdown every second
-          timer = setInterval(updateCountdown, 1000);
-          updateCountdown();
-        }
-
-        function updateCountdown() {
-          const now = new Date();
-          const diffMs = nextCheckTime - now;
-
-          if (diffMs <= 0) {
-            // Time to check for posts
-            checkForPosts();
-            return;
-          }
-
-          // Format the remaining time
-          const minutes = Math.floor(diffMs / 60000);
-          const seconds = Math.floor((diffMs % 60000) / 1000);
-          nextCheckSpan.textContent = `Next check in: ${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-        }
-
-        async function checkForPosts() {
-          // Show checking state
-          nextCheckSpan.textContent = "Checking for posts...";
-          nextCheckSpan.classList.add("pulse");
-
-          try {
-            // Fetch posts from Reddit (using their JSON API)
-            const redditUrl = `https://www.reddit.com/r/${settings.subreddit}/new.json?limit=10`;
-            const corsProxy = "https://api.allorigins.win/get?url=";
-            const encodedUrl = encodeURIComponent(redditUrl);
-
-            const response = await fetch(`${corsProxy}${encodedUrl}`);
-            const data = await response.json();
-
-            if (!data.contents) {
-              throw new Error("Failed to fetch Reddit data");
-            }
-
-            const redditData = JSON.parse(data.contents);
-
-            // Filter posts by flair (if set)
-            let filteredPosts = redditData.data.children;
-            if (settings.flair) {
-              filteredPosts = filteredPosts.filter(
-                (post) =>
-                  post.data.link_flair_text &&
-                  post.data.link_flair_text.toLowerCase() ===
-                    settings.flair.toLowerCase(),
-              );
-            }
-
-            // Get saved posts
-            const savedPosts = JSON.parse(
-              localStorage.getItem("cachedPosts") || "[]",
-            );
-            const savedPostIds = new Set(savedPosts.map((post) => post.id));
-
-            // Find new posts
-            const newPosts = filteredPosts.filter(
-              (post) => !savedPostIds.has(post.data.id),
-            );
-
-            // Send notifications for new posts
-            if (newPosts.length > 0 && settings.notifications) {
-              for (const post of newPosts) {
-                sendNotification(post.data);
-              }
-            }
-
-            // Combine new posts with saved posts and keep the most recent 20
-            const allPosts = [
-              ...newPosts.map((post) => ({
-                id: post.data.id,
-                title: post.data.title,
-                author: post.data.author,
-                permalink: `https://www.reddit.com${post.data.permalink}`,
-                created: post.data.created_utc * 1000, // Convert to milliseconds
-                flair: post.data.link_flair_text || "",
-              })),
-              ...savedPosts,
-            ]
-              .sort((a, b) => b.created - a.created)
-              .slice(0, 20);
-
-            // Save the updated posts
-            localStorage.setItem("cachedPosts", JSON.stringify(allPosts));
-
-            // Display the posts
-            displayPosts(allPosts);
-
-            // Show success message if new posts were found
-            if (newPosts.length > 0) {
-              showToast(
-                `Found ${newPosts.length} new post${newPosts.length > 1 ? "s" : ""}`,
-              );
-            } else {
-              showToast("No new posts found");
-            }
-          } catch (error) {
-            console.error("Error checking for posts:", error);
-            showToast("Error checking for posts", true);
-          } finally {
-            // Reset countdown
-            nextCheckSpan.classList.remove("pulse");
-            nextCheckTime = new Date();
-            nextCheckTime.setMinutes(
-              nextCheckTime.getMinutes() + parseInt(settings.checkInterval),
-            );
-            updateCountdown();
-          }
-        }
-
-        function displayPosts(posts) {
-          // Show empty state if no posts
-          if (posts.length === 0) {
-            emptyState.style.display = "block";
-            return;
-          }
-
-          // Hide empty state and display posts
-          emptyState.style.display = "none";
-
-          // Clear existing posts
-          const existingPosts = document.querySelectorAll(".post-card");
-          existingPosts.forEach((post) => post.remove());
-
-          // Create and append post elements
-          posts.forEach((post) => {
-            const postElement = document.createElement("div");
-            postElement.className = "post-card";
-
-            // Format date
-            const postDate = new Date(post.created);
-            const timeAgo = formatTimeAgo(postDate);
-
-            postElement.innerHTML = `
-            <div class="flex items-start">
-              <div class="mr-3 flex-shrink-0 mt-1">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-                  ${post.flair || "Post"}
-                </span>
-              </div>
-              <div class="flex-1 min-w-0">
-                <a href="${post.permalink}" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
-                  ${post.title}
-                </a>
-                <div class="mt-1 flex items-center text-xs text-gray-500 dark:text-gray-400">
-                  <span>Posted by u/${post.author}</span>
-                  <span class="mx-2">•</span>
-                  <span>${timeAgo}</span>
-                </div>
-              </div>
-              <div class="ml-2">
-                <a href="${post.permalink}" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </a>
-              </div>
-            </div>
-          `;
-
-            postsContainer.appendChild(postElement);
-          });
-        }
-
-        function formatTimeAgo(date) {
-          const seconds = Math.floor((new Date() - date) / 1000);
-
-          let interval = Math.floor(seconds / 31536000);
-          if (interval > 1) return interval + " years ago";
-          if (interval === 1) return "1 year ago";
-
-          interval = Math.floor(seconds / 2592000);
-          if (interval > 1) return interval + " months ago";
-          if (interval === 1) return "1 month ago";
-
-          interval = Math.floor(seconds / 86400);
-          if (interval > 1) return interval + " days ago";
-          if (interval === 1) return "1 day ago";
-
-          interval = Math.floor(seconds / 3600);
-          if (interval > 1) return interval + " hours ago";
-          if (interval === 1) return "1 hour ago";
-
-          interval = Math.floor(seconds / 60);
-          if (interval > 1) return interval + " minutes ago";
-          if (interval === 1) return "1 minute ago";
-
-          return "just now";
-        }
-
-        async function sendNotification(post) {
-          try {
-            // Send notification using ntfy.sh
-            const message = `New Giveaway in r/${settings.subreddit}: ${post.title}`;
-            const topic = settings.ntfyTopic;
-
-            await fetch(`https://ntfy.sh/${topic}`, {
-              method: "POST",
-              body: message,
-              headers: {
-                Title: "Reddit Giveaway Alert",
-                Tags: "gift,tada",
-                Priority: "3",
-                Click: `https://www.reddit.com${post.permalink}`,
-              },
-            });
-
-            console.log("Notification sent for:", post.title);
-          } catch (error) {
-            console.error("Error sending notification:", error);
-          }
-        }
-
-        function copyTopic() {
-          navigator.clipboard
-            .writeText(settings.ntfyTopic)
-            .then(() => {
-              showToast("Topic copied to clipboard");
-            })
-            .catch((err) => {
-              console.error("Error copying topic:", err);
-              showToast("Failed to copy topic", true);
-            });
-        }
-
-        function showToast(message, isError = false) {
-          const toast = document.getElementById("toast");
-          const toastMessage = document.getElementById("toast-message");
-
-          toastMessage.textContent = message;
-          toast.className = isError
-            ? "fixed right-4 bottom-4 z-50 fadeIn bg-red-500"
-            : "fixed right-4 bottom-4 z-50 fadeIn";
-          toast.style.display = "block";
-
-          setTimeout(() => {
-            toast.className = "fixed right-4 bottom-4 z-50 fadeOut";
-            setTimeout(() => {
-              toast.style.display = "none";
-            }, 300);
-          }, 3000);
-        }
-
-        function initializeTheme() {
-          // Check for saved theme preference or use system preference
-          const savedTheme = localStorage.getItem("color-theme");
-
-          // If the user has explicitly chosen a theme, use it
-          if (savedTheme) {
-            document.documentElement.classList.toggle(
-              "dark",
-              savedTheme === "dark",
-            );
-          } else {
-            // Otherwise, use the system preference
-            const systemPrefersDark = window.matchMedia(
-              "(prefers-color-scheme: dark)",
-            ).matches;
-            document.documentElement.classList.toggle(
-              "dark",
-              systemPrefersDark,
-            );
-          }
-
-          // Show the appropriate icon
-          if (document.documentElement.classList.contains("dark")) {
-            darkIcon.classList.add("hidden");
-            lightIcon.classList.remove("hidden");
-          } else {
-            darkIcon.classList.remove("hidden");
-            lightIcon.classList.add("hidden");
-          }
-        }
-
-        function toggleTheme() {
-          // Toggle dark class on html element
-          document.documentElement.classList.toggle("dark");
-
-          // Update theme in localStorage
-          if (document.documentElement.classList.contains("dark")) {
-            localStorage.setItem("color-theme", "dark");
-            darkIcon.classList.add("hidden");
-            lightIcon.classList.remove("hidden");
-          } else {
-            localStorage.setItem("color-theme", "light");
-            darkIcon.classList.remove("hidden");
-            lightIcon.classList.add("hidden");
-          }
-        }
-      });
-    </script>
-  </body>
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reddit Post Monitor</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<style>
+:root {
+--primary: #6366f1;
+--primary-hover: #4f46e5;
+--background: #f9fafb;
+--card-bg: #ffffff;
+--text: #1f2937;
+--text-secondary: #6b7280;
+--border: #e5e7eb;
+--toast-bg: #1f2937;
+--toast-text: #ffffff;
+}
+
+.dark {
+--primary: #818cf8;
+--primary-hover: #6366f1;
+--background: #111827;
+--card-bg: #1f2937;
+--text: #f9fafb;
+--text-secondary: #9ca3af;
+--border: #374151;
+--toast-bg: #f9fafb;
+--toast-text: #1f2937;
+}
+
+body {
+background-color: var(--background);
+color: var(--text);
+}
+
+/* Post card styling */
+.post-card {
+padding: 1rem;
+transition: background-color 0.2s;
+}
+
+.post-card:hover {
+background-color: rgba(0, 0, 0, 0.02);
+}
+
+.dark .post-card:hover {
+background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Countdown animation */
+@keyframes pulse {
+0%, 100% {
+opacity: 1;
+}
+50% {
+opacity: 0.5;
+}
+}
+
+.pulse {
+animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Toast animation */
+@keyframes fadeIn {
+from {
+opacity: 0;
+transform: translateY(20px);
+}
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
+
+@keyframes fadeOut {
+from {
+opacity: 1;
+transform: translateY(0);
+}
+to {
+opacity: 0;
+transform: translateY(20px);
+}
+}
+
+.fadeIn {
+animation: fadeIn 0.3s ease forwards;
+}
+
+.fadeOut {
+animation: fadeOut 0.3s ease forwards;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+width: 8px;
+}
+
+::-webkit-scrollbar-track {
+background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+background-color: var(--text-secondary);
+border-radius: 20px;
+border: 3px solid transparent;
+}
+
+/* Button focus styles */
+button:focus,
+input:focus,
+select:focus {
+outline: 2px solid var(--primary);
+outline-offset: 2px;
+}
+
+/* Transition effects */
+.transition-all {
+transition-property: all;
+transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+transition-duration: 300ms;
+}
+</style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
+<div class="container mx-auto px-4 py-8">
+<header class="mb-8">
+<h1 class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">Reddit Post Monitor</h1>
+<p class="text-gray-600 dark:text-gray-400 mt-2">Monitor subreddits for specific post types</p>
+</header>
+
+<main>
+<!-- Settings Card -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+<h2 class="text-xl font-semibold mb-4">Monitor Settings</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+<div>
+<label class="block text-sm font-medium mb-1" for="subreddit">Subreddit</label>
+<input type="text" id="subreddit" value="Soundmap"
+class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+</div>
+<div>
+<label class="block text-sm font-medium mb-1" for="flair">Filter by Flair</label>
+<input type="text" id="flair" value="Giveaway"
+class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+<div>
+<label class="block text-sm font-medium mb-1" for="checkInterval">Check Interval (minutes)</label>
+<select id="checkInterval"
+class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+<option value="1">1 minute</option>
+<option value="5" selected>5 minutes</option>
+<option value="10">10 minutes</option>
+<option value="15">15 minutes</option>
+<option value="30">30 minutes</option>
+<option value="60">1 hour</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1" for="ntfyTopic">Ntfy.sh Topic</label>
+<input type="text" id="ntfyTopic" value="redditmonitor"
+class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+</div>
+</div>
+<div class="flex items-center mb-4">
+<input type="checkbox" id="notifications" class="h-4 w-4 text-indigo-600" checked>
+<label for="notifications" class="ml-2 block text-sm">Enable Notifications</label>
+</div>
+<div id="status-container" class="flex justify-between items-center">
+<div>
+<span id="next-check" class="text-sm text-gray-600 dark:text-gray-400">Next check in: 5:00</span>
+</div>
+<div class="flex space-x-2">
+<button id="save-settings" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded">
+Save Settings
+</button>
+<button id="check-now" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded">
+Check Now
+</button>
+</div>
+</div>
+</div>
+
+<!-- Mobile Setup Card -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+<div class="flex items-center mb-4">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+<path fill-rule="evenodd" d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+</svg>
+<h3 class="text-xl font-semibold">Mobile Setup</h3>
+</div>
+<p class="mb-4 text-gray-600 dark:text-gray-400">
+Get notifications on your phone using ntfy.sh
+</p>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<h4 class="font-medium mb-2">1. Download ntfy app</h4>
+<div class="flex space-x-2 mb-4">
+<a href="https://play.google.com/store/apps/details?id=io.heckel.ntfy" target="_blank" class="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-sm rounded flex items-center">
+<svg class="h-5 w-5 mr-1" fill="currentColor" viewBox="0 0 24 24">
+<path d="M17.523 15.334c-.47.322-1.175.798-2.011 1.394-2.699 1.928-5.777 4.542-5.88 4.643a3.047 3.047 0 0 1-1.139.752c-.059.021-.119.04-.179.058V4.101c.059.018.119.037.179.058.41.14.798.361 1.139.752.103.101 3.172 2.704 5.88 4.643.846.605 1.553 1.082 2.011 1.394.459.313.57.573.6.728L18 12c0 .155-.53.415-.477.728"></path>
+</svg>
+Android
+</a>
+<a href="https://apps.apple.com/us/app/ntfy/id1625396347" target="_blank" class="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-sm rounded flex items-center">
+<svg class="h-5 w-5 mr-1" fill="currentColor" viewBox="0 0 24 24">
+<path d="M14.94 5.19A4.38 4.38 0 0 0 16 2a4.44 4.44 0 0 0-3 1.52 4.17 4.17 0 0 0-1 3.09 3.69 3.69 0 0 0 2.94-1.42zm2.52 7.44A4.51 4.51 0 0 1 19 16.5a11.11 11.11 0 0 1-1.62 3.25c-1.08 1.56-2.19 3.25-3.82 3.25s-2.12-1.31-4.12-1.31c-1.87 0-2.5 1.35-4.06 1.35S2.06 20.94 1 19.34a11.19 11.19 0 0 1 5.06-9.5 5.35 5.35 0 0 1 4.44 0A4.71 4.71 0 0 0 12.54 9a4.43 4.43 0 0 0 2.6-1.25A4.2 4.2 0 0 1 18 10.75a4 4 0 0 1-1.54 1.88"></path>
+</svg>
+iOS
+</a>
+</div>
+</div>
+
+<div>
+<h4 class="font-medium mb-2">2. Subscribe to the topic</h4>
+<div class="flex space-x-2 mb-4">
+<div class="flex-1 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded font-mono text-sm">
+<span id="topic-display">redditmonitor</span>
+</div>
+<button id="copy-topic" class="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+</svg>
+</button>
+</div>
+</div>
+</div>
+
+<a href="https://ntfy.sh/redditmonitor" target="_blank" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded mt-2">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+</svg>
+Open ntfy.sh Web Interface
+</a>
+</div>
+
+<!-- Recent Posts -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+<h2 class="text-xl font-semibold mb-4">Recent Posts</h2>
+
+<div id="posts-container" class="divide-y divide-gray-200 dark:divide-gray-700">
+<!-- Posts will be loaded here -->
+<div class="text-center py-10" id="empty-state">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+</svg>
+<h3 class="text-lg font-medium">No posts yet</h3>
+<p class="text-gray-500 dark:text-gray-400 mt-1">
+Recent posts will appear here when found
+</p>
+<button id="check-now-empty" class="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded inline-flex items-center">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+</svg>
+Check Now
+</button>
+</div>
+</div>
+</div>
+</main>
+
+<footer class="mt-8 text-center text-gray-600 dark:text-gray-400 text-sm">
+<p>
+Monitor Reddit subreddits for specific posts and get notifications
+</p>
+<div class="mt-2">
+<button id="theme-toggle" class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg p-2.5">
+<svg id="theme-toggle-dark-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+<path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+</svg>
+<svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+<path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+</svg>
+</button>
+</div>
+</footer>
+</div>
+
+<div id="toast" class="fixed right-4 bottom-4 z-50 opacity-0 transition-opacity duration-300 hidden">
+<div class="bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg">
+<span id="toast-message">Message here</span>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+// DOM elements
+const subredditInput = document.getElementById('subreddit');
+const flairInput = document.getElementById('flair');
+const checkIntervalSelect = document.getElementById('checkInterval');
+const ntfyTopicInput = document.getElementById('ntfyTopic');
+const notificationsCheckbox = document.getElementById('notifications');
+const saveSettingsBtn = document.getElementById('save-settings');
+const checkNowBtn = document.getElementById('check-now');
+const checkNowEmptyBtn = document.getElementById('check-now-empty');
+const nextCheckSpan = document.getElementById('next-check');
+const postsContainer = document.getElementById('posts-container');
+const emptyState = document.getElementById('empty-state');
+const topicDisplay = document.getElementById('topic-display');
+const copyTopicBtn = document.getElementById('copy-topic');
+const themeToggleBtn = document.getElementById('theme-toggle');
+const darkIcon = document.getElementById('theme-toggle-dark-icon');
+const lightIcon = document.getElementById('theme-toggle-light-icon');
+
+// Settings
+const defaultSettings = {
+subreddit: 'Soundmap',
+flair: 'Giveaway',
+checkInterval: 5,
+ntfyTopic: 'redditmonitor',
+notifications: true
+};
+
+let settings = loadSettings();
+let timer = null;
+let nextCheckTime = new Date();
+nextCheckTime.setMinutes(nextCheckTime.getMinutes() + settings.checkInterval);
+
+// Initialize UI
+initializeUI();
+startTimer();
+checkForPosts();
+initializeTheme();
+
+// Event listeners
+saveSettingsBtn.addEventListener('click', saveSettings);
+checkNowBtn.addEventListener('click', checkForPosts);
+checkNowEmptyBtn.addEventListener('click', checkForPosts);
+copyTopicBtn.addEventListener('click', copyTopic);
+themeToggleBtn.addEventListener('click', toggleTheme);
+
+// Functions
+function initializeUI() {
+subredditInput.value = settings.subreddit;
+flairInput.value = settings.flair;
+checkIntervalSelect.value = settings.checkInterval;
+ntfyTopicInput.value = settings.ntfyTopic;
+notificationsCheckbox.checked = settings.notifications;
+topicDisplay.textContent = settings.ntfyTopic;
+
+// Update ntfy.sh link
+document.querySelector('a[href^="https://ntfy.sh/"]').href = `https://ntfy.sh/${settings.ntfyTopic}`;
+}
+
+function loadSettings() {
+const savedSettings = localStorage.getItem('redditMonitorSettings');
+return savedSettings ? JSON.parse(savedSettings) : defaultSettings;
+}
+
+function saveSettings() {
+settings = {
+subreddit: subredditInput.value.trim(),
+flair: flairInput.value.trim(),
+checkInterval: parseInt(checkIntervalSelect.value),
+ntfyTopic: ntfyTopicInput.value.trim(),
+notifications: notificationsCheckbox.checked
+};
+
+localStorage.setItem('redditMonitorSettings', JSON.stringify(settings));
+showToast('Settings saved successfully');
+
+// Update UI
+topicDisplay.textContent = settings.ntfyTopic;
+document.querySelector('a[href^="https://ntfy.sh/"]').href = `https://ntfy.sh/${settings.ntfyTopic}`;
+
+// Reset timer
+clearInterval(timer);
+startTimer();
+
+// Check for posts with new settings
+checkForPosts();
+}
+
+function startTimer() {
+// Calculate next check time
+nextCheckTime = new Date();
+nextCheckTime.setMinutes(nextCheckTime.getMinutes() + parseInt(settings.checkInterval));
+
+// Update countdown every second
+timer = setInterval(updateCountdown, 1000);
+updateCountdown();
+}
+
+function updateCountdown() {
+const now = new Date();
+const diffMs = nextCheckTime - now;
+
+if (diffMs <= 0) {
+// Time to check for posts
+checkForPosts();
+return;
+}
+
+// Format the remaining time
+const minutes = Math.floor(diffMs / 60000);
+const seconds = Math.floor((diffMs % 60000) / 1000);
+nextCheckSpan.textContent = `Next check in: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+}
+
+async function checkForPosts() {
+// Show checking state
+nextCheckSpan.textContent = 'Checking for posts...';
+nextCheckSpan.classList.add('pulse');
+
+try {
+// Use corsproxy.io instead of allorigins which has issues
+const redditUrl = `https://www.reddit.com/r/${settings.subreddit}/new.json?limit=10`;
+const corsProxy = 'https://corsproxy.io/?';
+
+const response = await fetch(corsProxy + redditUrl);
+
+if (!response.ok) {
+throw new Error(`HTTP error! status: ${response.status}`);
+}
+
+const data = await response.json();
+
+// Filter posts by flair (if set)
+let filteredPosts = data.data.children;
+if (settings.flair) {
+const flairLower = settings.flair.toLowerCase();
+filteredPosts = filteredPosts.filter(post =>
+post.data.link_flair_text &&
+post.data.link_flair_text.toLowerCase().includes(flairLower)
+);
+}
+
+// Get saved posts
+const savedPosts = JSON.parse(localStorage.getItem('cachedPosts') || '[]');
+const savedPostIds = new Set(savedPosts.map(post => post.id));
+
+// Find new posts
+const newPosts = filteredPosts.filter(post => !savedPostIds.has(post.data.id));
+
+// Send notifications for new posts
+if (newPosts.length > 0 && settings.notifications) {
+for (const post of newPosts) {
+sendNotification(post.data);
+}
+}
+
+// Combine new posts with saved posts and keep the most recent 20
+const allPosts = [
+...newPosts.map(post => ({
+id: post.data.id,
+title: post.data.title,
+author: post.data.author,
+permalink: `https://www.reddit.com${post.data.permalink}`,
+created: post.data.created_utc * 1000, // Convert to milliseconds
+flair: post.data.link_flair_text || ''
+})),
+...savedPosts
+].sort((a, b) => b.created - a.created).slice(0, 20);
+
+// Save the updated posts
+localStorage.setItem('cachedPosts', JSON.stringify(allPosts));
+
+// Display the posts
+displayPosts(allPosts);
+
+// Show success message if new posts were found
+if (newPosts.length > 0) {
+showToast(`Found ${newPosts.length} new post${newPosts.length > 1 ? 's' : ''}`);
+} else {
+showToast('No new posts found');
+}
+} catch (error) {
+console.error('Error checking for posts:', error);
+showToast(`Error: ${error.message}. Try a different subreddit.`, true);
+} finally {
+// Reset countdown
+nextCheckSpan.classList.remove('pulse');
+nextCheckTime = new Date();
+nextCheckTime.setMinutes(nextCheckTime.getMinutes() + parseInt(settings.checkInterval));
+updateCountdown();
+}
+}
+
+function displayPosts(posts) {
+// Show empty state if no posts
+if (posts.length === 0) {
+emptyState.style.display = 'block';
+return;
+}
+
+// Hide empty state and display posts
+emptyState.style.display = 'none';
+
+// Clear existing posts
+const existingPosts = document.querySelectorAll('.post-card');
+existingPosts.forEach(post => post.remove());
+
+// Create and append post elements
+posts.forEach(post => {
+const postElement = document.createElement('div');
+postElement.className = 'post-card';
+
+// Format date
+const postDate = new Date(post.created);
+const timeAgo = formatTimeAgo(postDate);
+
+postElement.innerHTML = `
+<div class="flex items-start">
+<div class="mr-3 flex-shrink-0 mt-1">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+${post.flair || 'Post'}
+</span>
+</div>
+<div class="flex-1 min-w-0">
+<a href="${post.permalink}" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
+${post.title}
+</a>
+<div class="mt-1 flex items-center text-xs text-gray-500 dark:text-gray-400">
+<span>Posted by u/${post.author}</span>
+<span class="mx-2">•</span>
+<span>${timeAgo}</span>
+</div>
+</div>
+<div class="ml-2">
+<a href="${post.permalink}" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+</svg>
+</a>
+</div>
+</div>
+`;
+
+postsContainer.appendChild(postElement);
+});
+}
+
+function formatTimeAgo(date) {
+const seconds = Math.floor((new Date() - date) / 1000);
+
+let interval = Math.floor(seconds / 31536000);
+if (interval > 1) return interval + ' years ago';
+if (interval === 1) return '1 year ago';
+
+interval = Math.floor(seconds / 2592000);
+if (interval > 1) return interval + ' months ago';
+if (interval === 1) return '1 month ago';
+
+interval = Math.floor(seconds / 86400);
+if (interval > 1) return interval + ' days ago';
+if (interval === 1) return '1 day ago';
+
+interval = Math.floor(seconds / 3600);
+if (interval > 1) return interval + ' hours ago';
+if (interval === 1) return '1 hour ago';
+
+interval = Math.floor(seconds / 60);
+if (interval > 1) return interval + ' minutes ago';
+if (interval === 1) return '1 minute ago';
+
+return 'just now';
+}
+
+async function sendNotification(post) {
+try {
+// Send notification using ntfy.sh
+const message = `New Post in r/${settings.subreddit}: ${post.title}`;
+const topic = settings.ntfyTopic;
+
+await fetch(`https://ntfy.sh/${topic}`, {
+method: 'POST',
+body: message,
+headers: {
+'Title': 'Reddit Post Alert',
+'Tags': 'reddit',
+'Priority': '3',
+'Click': `https://www.reddit.com${post.permalink}`
+}
+});
+
+console.log('Notification sent for:', post.title);
+} catch (error) {
+console.error('Error sending notification:', error);
+}
+}
+
+function copyTopic() {
+navigator.clipboard.writeText(settings.ntfyTopic)
+.then(() => {
+showToast('Topic copied to clipboard');
+})
+.catch(err => {
+console.error('Error copying topic:', err);
+showToast('Failed to copy topic', true);
+});
+}
+
+function showToast(message, isError = false) {
+const toast = document.getElementById('toast');
+const toastMessage = document.getElementById('toast-message');
+
+toastMessage.textContent = message;
+toast.className = isError ? 'fixed right-4 bottom-4 z-50 fadeIn bg-red-500' : 'fixed right-4 bottom-4 z-50 fadeIn';
+toast.style.display = 'block';
+
+setTimeout(() => {
+toast.className = 'fixed right-4 bottom-4 z-50 fadeOut';
+setTimeout(() => {
+toast.style.display = 'none';
+}, 300);
+}, 3000);
+}
+
+function initializeTheme() {
+// Check for saved theme preference or use system preference
+const savedTheme = localStorage.getItem('color-theme');
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+document.documentElement.classList.add('dark');
+darkIcon.classList.add('hidden');
+lightIcon.classList.remove('hidden');
+} else {
+document.documentElement.classList.remove('dark');
+darkIcon.classList.remove('hidden');
+lightIcon.classList.add('hidden');
+}
+}
+
+function toggleTheme() {
+// Toggle dark class on html element
+document.documentElement.classList.toggle('dark');
+
+// Update theme in localStorage
+if (document.documentElement.classList.contains('dark')) {
+localStorage.setItem('color-theme', 'dark');
+darkIcon.classList.add('hidden');
+lightIcon.classList.remove('hidden');
+} else {
+localStorage.setItem('color-theme', 'light');
+darkIcon.classList.remove('hidden');
+lightIcon.classList.add('hidden');
+}
+}
+});
+</script>
+</body>
 </html>
