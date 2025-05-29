@@ -1,980 +1,1452 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Social Search</title>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-<style>
-:root {
---primary: #FF4500; /* Reddit orange */
---primary-hover: #e03d00;
---secondary: #1DA1F2; /* Twitter blue */
---secondary-hover: #0d8fd9;
---tertiary: #4267B2; /* Facebook blue */
---tertiary-hover: #365899;
---background: #f5f5f5;
---card-bg: #ffffff;
---text: #1c1c1c;
---text-secondary: #7c7c7c;
---border: #edeff1;
---toast-bg: #1f2937;
---toast-text: #ffffff;
---vote-up: #FF4500;
---vote-down: #7193FF;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Search - Enhanced</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #FF4500;
+      --primary-hover: #e03d00;
+      --secondary: #1DA1F2;
+      --secondary-hover: #0d8fd9;
+      --tertiary: #4267B2;
+      --tertiary-hover: #365899;
+      --background: #f5f5f5;
+      --card-bg: #ffffff;
+      --text: #1c1c1c;
+      --text-secondary: #7c7c7c;
+      --border: #edeff1;
+      --toast-bg: #1f2937;
+      --toast-text: #ffffff;
+    }
+    
+    .dark {
+      --primary: #FF4500;
+      --primary-hover: #e03d00;
+      --secondary: #1DA1F2;
+      --secondary-hover: #0d8fd9;
+      --tertiary: #4267B2;
+      --tertiary-hover: #365899;
+      --background: #121212;
+      --card-bg: #1A1A1B;
+      --text: #D7DADC;
+      --text-secondary: #818384;
+      --border: #343536;
+      --toast-bg: #D7DADC;
+      --toast-text: #1A1A1B;
+    }
 
-.dark {
---primary: #FF4500;
---primary-hover: #e03d00;
---secondary: #1DA1F2;
---secondary-hover: #0d8fd9;
---tertiary: #4267B2;
---tertiary-hover: #365899;
---background: #121212;
---card-bg: #1A1A1B;
---text: #D7DADC;
---text-secondary: #818384;
---border: #343536;
---toast-bg: #D7DADC;
---toast-text: #1A1A1B;
-}
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      font-family: 'IBM Plex Sans', 'Noto Sans', 'Roboto', sans-serif;
+    }
+    
+    .post-card {
+      padding: 1rem;
+      transition: background-color 0.2s;
+      border: 1px solid var(--border);
+      margin-bottom: 0.5rem;
+      background-color: var(--card-bg);
+    }
+    
+    .post-card:hover {
+      border-color: var(--primary);
+    }
 
-body {
-background-color: var(--background);
-color: var(--text);
-font-family: 'IBM Plex Sans', 'Noto Sans', 'Roboto', sans-serif;
-}
+    .app-header {
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+    }
 
-.post-card {
-padding: 1rem;
-transition: background-color 0.2s;
-border: 1px solid var(--border);
-margin-bottom: 0.5rem;
-}
+    .reddit-button {
+      background-color: var(--primary);
+      color: white;
+      font-weight: bold;
+      border-radius: 9999px;
+    }
 
-.post-card:hover {
-border-color: var(--primary);
-}
-
-.app-header {
-background-color: var(--card-bg);
-border-bottom: 1px solid var(--border);
-}
-
-.reddit-button {
-background-color: var(--primary);
-color: white;
-font-weight: bold;
-border-radius: 9999px;
-}
-
-.reddit-button:hover {
-background-color: var(--primary-hover);
-}
-
-.platform-tab {
-cursor: pointer;
-transition: all 0.2s;
-border-bottom: 2px solid transparent;
-padding: 0.5rem 1rem;
-}
-
-.platform-tab.active {
-border-bottom-color: var(--primary);
-font-weight: bold;
-}
-
-.platform-tab:hover:not(.active) {
-border-bottom-color: var(--border);
-}
-
-/* Animation styles */
-@keyframes pulse {
-0%, 100% { opacity: 1; }
-50% { opacity: 0.5; }
-}
-
-.pulse {
-animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes fadeIn {
-from { opacity: 0; transform: translateY(20px); }
-to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeOut {
-from { opacity: 1; transform: translateY(0); }
-to { opacity: 0; transform: translateY(20px); }
-}
-
-.fadeIn { animation: fadeIn 0.3s ease forwards; }
-.fadeOut { animation: fadeOut 0.3s ease forwards; }
-
-.chip {
-cursor: pointer;
-transition: all 0.2s;
-border: 1px solid var(--border);
-}
-
-.chip:hover {
-background-color: var(--primary);
-color: white;
-}
-
-/* Platform specific colors */
-.platform-reddit {
---platform-color: var(--primary);
---platform-hover: var(--primary-hover);
-}
-
-.platform-twitter {
---platform-color: var(--secondary);
---platform-hover: var(--secondary-hover);
-}
-
-.platform-facebook {
---platform-color: var(--tertiary);
---platform-hover: var(--tertiary-hover);
-}
-</style>
+    .reddit-button:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    .platform-tab {
+      cursor: pointer;
+      transition: all 0.2s;
+      border-bottom: 2px solid transparent;
+      padding: 0.5rem 1rem;
+    }
+    
+    .platform-tab.active {
+      border-bottom-color: var(--primary);
+      font-weight: bold;
+    }
+    
+    .platform-tab:hover:not(.active) {
+      border-bottom-color: var(--border);
+    }
+    
+    .chip {
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid var(--border);
+      background-color: var(--card-bg);
+    }
+    
+    .chip:hover {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .hidden { display: none; }
+    .fadeIn { animation: fadeIn 0.3s ease forwards; }
+    .fadeOut { animation: fadeOut 0.3s ease forwards; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(20px); }
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 0.375rem;
+      background-color: var(--card-bg);
+      color: var(--text);
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(255, 69, 0, 0.2);
+    }
+    
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    .btn-secondary {
+      background-color: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    
+    .btn-secondary:hover {
+      background-color: var(--border);
+    }
+    
+    .nav-item {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 0.375rem;
+      margin-bottom: 0.25rem;
+    }
+    
+    .nav-item:hover {
+      background-color: var(--border);
+    }
+    
+    .nav-item.active {
+      background-color: var(--primary);
+      color: white;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
-<!-- App header -->
-<header class="app-header sticky top-0 z-10 px-4 py-2">
-<div class="container mx-auto flex items-center justify-between">
-<div class="flex items-center">
-<svg class="h-8 w-8 text-primary fill-current" viewBox="0 0 20 20">
-<path d="M10 0C4.478 0 0 4.478 0 10c0 5.523 4.478 10 10 10 5.523 0 10-4.477 10-10 0-5.522-4.477-10-10-10zm5.7 11.25c.06.218.081.44.061.661-.06.661-.366 1.235-.846 1.637-.48.4-1.145.622-1.827.622-.737 0-1.416-.246-1.956-.661-.54.415-1.22.661-1.956.661-.682 0-1.347-.222-1.827-.622-.48-.402-.786-.976-.846-1.637-.02-.22 0-.443.061-.661-.53-.354-.847-.942-.847-1.573 0-.698.347-1.309.878-1.677.53-.369 1.225-.502 1.877-.332.654-.894 1.615-1.464 2.66-1.464s2.006.57 2.66 1.464c.652-.17 1.347-.037 1.877.332.53.368.878.979.878 1.677 0 .631-.318 1.219-.847 1.573zM7.35 9.05c-.542 0-.983.441-.983.984 0 .542.44.983.983.983.541 0 .982-.44.982-.983 0-.543-.44-.984-.982-.984zm5.3 0c-.542 0-.983.441-.983.984 0 .542.44.983.983.983.541 0 .982-.44.982-.983 0-.543-.44-.984-.982-.984z"></path>
-</svg>
-<h1 class="ml-2 text-xl font-bold text-primary">Social Search</h1>
-</div>
-<button id="theme-toggle" class="p-2 rounded-full">
-<svg id="theme-toggle-dark-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-<path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-</svg>
-<svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-<path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
-</svg>
-</button>
-</div>
-</header>
-
-<!-- Platform tabs -->
-<div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-<div class="container mx-auto px-4">
-<div class="flex overflow-x-auto">
-<div class="platform-tab platform-reddit active" data-platform="reddit">
-<div class="flex items-center">
-<svg class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-<path d="M10 0C4.478 0 0 4.478 0 10c0 5.523 4.478 10 10 10 5.523 0 10-4.477 10-10 0-5.522-4.477-10-10-10zm5.7 11.25c.06.218.081.44.061.661-.06.661-.366 1.235-.846 1.637-.48.4-1.145.622-1.827.622-.737 0-1.416-.246-1.956-.661-.54.415-1.22.661-1.956.661-.682 0-1.347-.222-1.827-.622-.48-.402-.786-.976-.846-1.637-.02-.22 0-.443.061-.661-.53-.354-.847-.942-.847-1.573 0-.698.347-1.309.878-1.677.53-.369 1.225-.502 1.877-.332.654-.894 1.615-1.464 2.66-1.464s2.006.57 2.66 1.464c.652-.17 1.347-.037 1.877.332.53.368.878.979.878 1.677 0 .631-.318 1.219-.847 1.573zM7.35 9.05c-.542 0-.983.441-.983.984 0 .542.44.983.983.983.541 0 .982-.44.982-.983 0-.543-.44-.984-.982-.984zm5.3 0c-.542 0-.983.441-.983.984 0 .542.44.983.983.983.541 0 .982-.44.982-.983 0-.543-.44-.984-.982-.984z"></path>
-</svg>
-Reddit
-</div>
-</div>
-<div class="platform-tab platform-twitter" data-platform="twitter">
-<div class="flex items-center">
-<svg class="h-5 w-5 mr-1" viewBox="0 0 24 24" fill="currentColor">
-<path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-</svg>
-Twitter
-<span class="ml-1 text-xs text-gray-500">(Coming soon)</span>
-</div>
-</div>
-<div class="platform-tab platform-facebook" data-platform="facebook">
-<div class="flex items-center">
-<svg class="h-5 w-5 mr-1" viewBox="0 0 24 24" fill="currentColor">
-<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-</svg>
-Facebook
-<span class="ml-1 text-xs text-gray-500">(Coming soon)</span>
-</div>
-</div>
-</div>
-</div>
-</div>
-
-<div class="container mx-auto px-4 py-6">
-<main class="grid grid-cols-1 md:grid-cols-3 gap-6">
-<!-- Left column - Settings & Recommended Sources -->
-<div class="md:col-span-1">
-<!-- Settings Card -->
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-<h2 class="text-xl font-semibold mb-4">Monitor Settings</h2>
-<div class="mb-4">
-<label class="block text-sm font-medium mb-1" for="subreddit">Subreddit</label>
-<input type="text" id="subreddit" value="Soundmap"
-class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-</div>
-<div class="mb-4">
-<label class="block text-sm font-medium mb-1" for="flair">Filter by Flair</label>
-<input type="text" id="flair" value="N/A"
-class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-</div>
-<div class="mb-4">
-<label class="block text-sm font-medium mb-1" for="checkInterval">Check Interval</label>
-<select id="checkInterval"
-class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-<option value="1">1 minute</option>
-<option value="5" selected>5 minutes</option>
-<option value="10">10 minutes</option>
-<option value="15">15 minutes</option>
-<option value="30">30 minutes</option>
-<option value="60">1 hour</option>
-</select>
-</div>
-<div class="mb-4">
-<label class="block text-sm font-medium mb-1" for="ntfyTopic">Ntfy.sh Topic</label>
-<input type="text" id="ntfyTopic" value="redditmonitor"
-class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-</div>
-<div class="flex items-center mb-4">
-<input type="checkbox" id="notifications" class="h-4 w-4 text-primary" checked>
-<label for="notifications" class="ml-2 block text-sm">Enable Notifications</label>
-</div>
-<div class="flex justify-between items-center">
-<span id="next-check" class="text-sm text-gray-600 dark:text-gray-400">Next check in: 5:00</span>
-<div class="flex space-x-2">
-<button id="save-settings" class="px-4 py-2 reddit-button">
-Save Settings
-</button>
-<button id="check-now" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded">
-Check Now
-</button>
-</div>
-</div>
-</div>
-
-<!-- Recommended Sources Card -->
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6" id="recommended-sources">
-<h2 class="text-xl font-semibold mb-4">Popular Subreddits</h2>
-<div class="flex flex-wrap gap-2">
-<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="AskReddit">r/AskReddit</span>
-<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="mildlyinfuriating">r/mildlyinfuriating</span>
-<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="worldnews">r/worldnews</span>
-<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="funny">r/funny</span>
-<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="gaming">r/gaming</span>
-<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="pics">r/pics</span>
-<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="news">r/news</span>
-<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="aww">r/aww</span>
-<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="movies">r/movies</span>
-<span class="chip px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm" data-source="explainlikeimfive">r/explainlikeimfive</span>
-</div>
-</div>
-
-<!-- Notification Setup Card -->
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-<div class="flex items-center mb-4">
-<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary" viewBox="0 0 20 20" fill="currentColor">
-<path fill-rule="evenodd" d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-</svg>
-<h3 class="text-xl font-semibold">Mobile Notifications</h3>
-</div>
-<p class="mb-4 text-gray-600 dark:text-gray-400">
-Get alerts on your phone using ntfy.sh
-</p>
-
-<div class="space-y-4">
-<div>
-<h4 class="font-medium mb-2">1. Download ntfy app</h4>
-<div class="flex space-x-2 mb-4">
-<a href="https://play.google.com/store/apps/details?id=io.heckel.ntfy" target="_blank" class="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-sm rounded flex items-center">
-<svg class="h-5 w-5 mr-1" fill="currentColor" viewBox="0 0 24 24">
-<path d="M17.523 15.334c-.47.322-1.175.798-2.011 1.394-2.699 1.928-5.777 4.542-5.88 4.643a3.047 3.047 0 0 1-1.139.752c-.059.021-.119.04-.179.058V4.101c.059.018.119.037.179.058.41.14.798.361 1.139.752.103.101 3.172 2.704 5.88 4.643.846.605 1.553 1.082 2.011 1.394.459.313.57.573.6.728L18 12c0 .155-.53.415-.477.728"></path>
-</svg>
-Android
-</a>
-<a href="https://apps.apple.com/us/app/ntfy/id1625396347" target="_blank" class="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-sm rounded flex items-center">
-<svg class="h-5 w-5 mr-1" fill="currentColor" viewBox="0 0 24 24">
-<path d="M14.94 5.19A4.38 4.38 0 0 0 16 2a4.44 4.44 0 0 0-3 1.52 4.17 4.17 0 0 0-1 3.09 3.69 3.69 0 0 0 2.94-1.42zm2.52 7.44A4.51 4.51 0 0 1 19 16.5a11.11 11.11 0 0 1-1.62 3.25c-1.08 1.56-2.19 3.25-3.82 3.25s-2.12-1.31-4.12-1.31c-1.87 0-2.5 1.35-4.06 1.35S2.06 20.94 1 19.34a11.19 11.19 0 0 1 5.06-9.5 5.35 5.35 0 0 1 4.44 0A4.71 4.71 0 0 0 12.54 9a4.43 4.43 0 0 0 2.6-1.25A4.2 4.2 0 0 1 18 10.75a4 4 0 0 1-1.54 1.88"></path>
-</svg>
-iOS
-</a>
-</div>
-</div>
-
-<div>
-<h4 class="font-medium mb-2">2. Subscribe to the topic</h4>
-<div class="flex space-x-2 mb-4">
-<div class="flex-1 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded font-mono text-sm">
-<span id="topic-display">redditmonitor</span>
-</div>
-<button id="copy-topic" class="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded">
-<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-</svg>
-</button>
-</div>
-</div>
-</div>
-
-<a href="https://ntfy.sh/redditmonitor" target="_blank" id="ntfy-link" class="inline-flex items-center px-4 py-2 reddit-button mt-2">
-<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-</svg>
-Open ntfy.sh Web Interface
-</a>
-</div>
-</div>
-
-<!-- Right column - Post Feed -->
-<div class="md:col-span-2">
-<!-- Posts Card -->
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-<div class="flex justify-between items-center mb-4">
-<h2 class="text-xl font-semibold">Recent Posts</h2>
-<button id="check-now-feed" class="px-4 py-2 reddit-button text-sm">
-Check Now
-</button>
-</div>
-
-<div id="posts-container" class="divide-y divide-gray-200 dark:divide-gray-700">
-<!-- Posts will be loaded here -->
-<div class="text-center py-10" id="empty-state">
-<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-</svg>
-<h3 class="text-lg font-medium">No posts yet</h3>
-<p class="text-gray-500 dark:text-gray-400 mt-1">
-Content from your selected platforms will appear here
-</p>
-</div>
-</div>
-
-<!-- Show More Button (initially hidden) -->
-<div id="show-more-container" class="mt-4 text-center hidden">
-<button id="show-more-posts" class="px-4 py-2 text-primary hover:underline">
-Show More Posts
-</button>
-</div>
-</div>
-</div>
-</main>
-
-<footer class="mt-8 text-center text-gray-600 dark:text-gray-400 text-sm">
-<p>
-Social Search - Monitor your favorite social media platforms for specific content
-</p>
-</footer>
-</div>
-
-<div id="toast" class="fixed right-4 bottom-4 z-50 opacity-0 transition-opacity duration-300 hidden">
-<div class="bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg">
-<span id="toast-message">Message here</span>
-</div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-// DOM elements
-const subredditInput = document.getElementById('subreddit');
-const flairInput = document.getElementById('flair');
-const checkIntervalSelect = document.getElementById('checkInterval');
-const ntfyTopicInput = document.getElementById('ntfyTopic');
-const notificationsCheckbox = document.getElementById('notifications');
-const saveSettingsBtn = document.getElementById('save-settings');
-const checkNowBtn = document.getElementById('check-now');
-const checkNowFeedBtn = document.getElementById('check-now-feed');
-const nextCheckSpan = document.getElementById('next-check');
-const postsContainer = document.getElementById('posts-container');
-const emptyState = document.getElementById('empty-state');
-const topicDisplay = document.getElementById('topic-display');
-const copyTopicBtn = document.getElementById('copy-topic');
-const themeToggleBtn = document.getElementById('theme-toggle');
-const darkIcon = document.getElementById('theme-toggle-dark-icon');
-const lightIcon = document.getElementById('theme-toggle-light-icon');
-const chips = document.querySelectorAll('.chip');
-const showMoreContainer = document.getElementById('show-more-container');
-const showMoreBtn = document.getElementById('show-more-posts');
-const platformTabs = document.querySelectorAll('.platform-tab');
-const ntfyLink = document.getElementById('ntfy-link');
-const recommendedSources = document.getElementById('recommended-sources');
-
-// Settings
-const defaultSettings = {
-platform: 'reddit',
-subreddit: 'Soundmap',
-flair: 'N/A',
-checkInterval: 5,
-ntfyTopic: 'socialsearch',
-notifications: true
-};
-
-let settings = loadSettings();
-let timer = null;
-let nextCheckTime = new Date();
-nextCheckTime.setMinutes(nextCheckTime.getMinutes() + settings.checkInterval);
-let allPosts = []; // Store all posts
-let visiblePostCount = 10; // Initial number of posts to show
-let currentPlatform = settings.platform || 'reddit';
-
-// Initialize UI
-initializeUI();
-startTimer();
-checkForPosts();
-initializeTheme();
-updatePlatformUI(currentPlatform);
-
-// Event listeners
-saveSettingsBtn.addEventListener('click', saveSettings);
-checkNowBtn.addEventListener('click', checkForPosts);
-checkNowFeedBtn.addEventListener('click', checkForPosts);
-copyTopicBtn.addEventListener('click', copyTopic);
-themeToggleBtn.addEventListener('click', toggleTheme);
-showMoreBtn.addEventListener('click', showMorePosts);
-
-// Add event listeners to chips
-chips.forEach(chip => {
-chip.addEventListener('click', () => {
-subredditInput.value = chip.dataset.source;
-saveSettings();
-});
-});
-
-// Add event listeners to platform tabs
-platformTabs.forEach(tab => {
-tab.addEventListener('click', () => {
-if (tab.classList.contains('active') || tab.querySelector('span')) {
-return; // Skip if already active or has "coming soon" tag
-}
-
-const platform = tab.dataset.platform;
-currentPlatform = platform;
-
-// Update active tab
-platformTabs.forEach(t => t.classList.remove('active'));
-tab.classList.add('active');
-
-// Update UI for the selected platform
-updatePlatformUI(platform);
-
-// Update settings
-settings.platform = platform;
-localStorage.setItem('socialSearchSettings', JSON.stringify(settings));
-
-// Clear posts when changing platforms
-clearPosts();
-});
-});
-
-// Functions
-function initializeUI() {
-subredditInput.value = settings.subreddit;
-flairInput.value = settings.flair;
-checkIntervalSelect.value = settings.checkInterval;
-ntfyTopicInput.value = settings.ntfyTopic;
-notificationsCheckbox.checked = settings.notifications;
-topicDisplay.textContent = settings.ntfyTopic;
-ntfyLink.href = `https://ntfy.sh/${settings.ntfyTopic}`;
-}
-
-function loadSettings() {
-const savedSettings = localStorage.getItem('socialSearchSettings');
-return savedSettings ? JSON.parse(savedSettings) : defaultSettings;
-}
-
-function saveSettings() {
-const oldSettings = {...settings};
-
-settings = {
-...settings,
-subreddit: subredditInput.value.trim(),
-flair: flairInput.value.trim(),
-checkInterval: parseInt(checkIntervalSelect.value),
-ntfyTopic: ntfyTopicInput.value.trim(),
-notifications: notificationsCheckbox.checked
-};
-
-localStorage.setItem('socialSearchSettings', JSON.stringify(settings));
-showToast('Settings saved successfully');
-
-// Update UI
-topicDisplay.textContent = settings.ntfyTopic;
-ntfyLink.href = `https://ntfy.sh/${settings.ntfyTopic}`;
-
-// Reset timer
-clearInterval(timer);
-startTimer();
-
-// If subreddit or flair changed, clear existing posts that don't match new settings
-if (oldSettings.subreddit !== settings.subreddit ||
-oldSettings.flair !== settings.flair) {
-clearPostsThatDontMatchSettings();
-}
-
-// Check for posts with new settings
-checkForPosts();
-}
-
-function updatePlatformUI(platform) {
-// Update UI based on selected platform
-switch(platform) {
-case 'reddit':
-document.querySelector('label[for="subreddit"]').textContent = 'Subreddit';
-document.querySelector('label[for="flair"]').textContent = 'Filter by Flair';
-recommendedSources.querySelector('h2').textContent = 'Popular Subreddits';
-chips.forEach(chip => {
-chip.textContent = `r/${chip.dataset.source}`;
-});
-break;
-case 'twitter':
-document.querySelector('label[for="subreddit"]').textContent = 'Username/Hashtag';
-document.querySelector('label[for="flair"]').textContent = 'Keywords';
-recommendedSources.querySelector('h2').textContent = 'Popular Twitter Accounts';
-chips.forEach(chip => {
-chip.textContent = `@${chip.dataset.source}`;
-});
-break;
-case 'facebook':
-document.querySelector('label[for="subreddit"]').textContent = 'Page/Group';
-document.querySelector('label[for="flair"]').textContent = 'Keywords';
-recommendedSources.querySelector('h2').textContent = 'Popular Facebook Pages';
-chips.forEach(chip => {
-chip.textContent = `${chip.dataset.source}`;
-});
-break;
-}
-}
-
-function clearPostsThatDontMatchSettings() {
-// Keep only posts that match current settings
-if (allPosts.length > 0) {
-const filteredPosts = allPosts.filter(post => {
-// Keep posts from the current subreddit
-if (post.subreddit.toLowerCase() !== settings.subreddit.toLowerCase()) {
-return false;
-}
-
-// If flair filter is set (and not N/A), check it too
-if (settings.flair && settings.flair !== 'N/A') {
-return post.flair && post.flair.toLowerCase().includes(settings.flair.toLowerCase());
-}
-
-return true;
-});
-
-// Update allPosts and localStorage
-allPosts = filteredPosts;
-localStorage.setItem('cachedPosts', JSON.stringify(allPosts));
-
-// Display the filtered posts
-displayPosts(allPosts.slice(0, visiblePostCount));
-}
-}
-
-function clearPosts() {
-allPosts = [];
-localStorage.setItem('cachedPosts', JSON.stringify(allPosts));
-postsContainer.innerHTML = '';
-postsContainer.appendChild(emptyState);
-emptyState.style.display = 'block';
-showMoreContainer.classList.add('hidden');
-}
-
-function startTimer() {
-// Calculate next check time
-nextCheckTime = new Date();
-nextCheckTime.setMinutes(nextCheckTime.getMinutes() + parseInt(settings.checkInterval));
-
-// Update countdown every second
-timer = setInterval(updateCountdown, 1000);
-updateCountdown();
-}
-
-function updateCountdown() {
-const now = new Date();
-const diffMs = nextCheckTime - now;
-
-if (diffMs <= 0) {
-// Time to check for posts
-checkForPosts();
-return;
-}
-
-// Format the remaining time
-const minutes = Math.floor(diffMs / 60000);
-const seconds = Math.floor((diffMs % 60000) / 1000);
-nextCheckSpan.textContent = `Next check in: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-}
-
-function showMorePosts() {
-visiblePostCount += 10;
-displayPosts(allPosts.slice(0, visiblePostCount));
-
-// Hide "Show More" button if all posts are now visible
-if (visiblePostCount >= allPosts.length) {
-showMoreContainer.classList.add('hidden');
-}
-}
-
-async function checkForPosts() {
-// Currently only Reddit is implemented
-if (currentPlatform !== 'reddit') {
-showToast(`${currentPlatform.charAt(0).toUpperCase() + currentPlatform.slice(1)} integration coming soon`, true);
-return;
-}
-
-// Show checking state
-nextCheckSpan.textContent = 'Checking for posts...';
-nextCheckSpan.classList.add('pulse');
-
-try {
-// Use corsproxy.io as it's more reliable
-const redditUrl = `https://www.reddit.com/r/${settings.subreddit}/new.json?limit=25`;
-const corsProxy = 'https://corsproxy.io/?';
-
-const response = await fetch(corsProxy + redditUrl);
-
-if (!response.ok) {
-throw new Error(`HTTP error! status: ${response.status}`);
-}
-
-const data = await response.json();
-
-// Filter posts by flair (if set and not N/A)
-let filteredPosts = data.data.children;
-if (settings.flair && settings.flair !== 'N/A') {
-const flairLower = settings.flair.toLowerCase();
-filteredPosts = filteredPosts.filter(post =>
-post.data.link_flair_text &&
-post.data.link_flair_text.toLowerCase().includes(flairLower)
-);
-}
-
-// Get saved posts
-const savedPosts = JSON.parse(localStorage.getItem('cachedPosts') || '[]');
-const savedPostIds = new Set(savedPosts.map(post => post.id));
-
-// Find new posts
-const newPosts = filteredPosts.filter(post => !savedPostIds.has(post.data.id));
-
-// Send notifications for new posts
-if (newPosts.length > 0 && settings.notifications) {
-for (const post of newPosts) {
-sendNotification(post.data);
-}
-}
-
-// Transform new posts to our format
-const formattedNewPosts = newPosts.map(post => ({
-id: post.data.id,
-title: post.data.title,
-author: post.data.author,
-subreddit: settings.subreddit,
-permalink: `https://www.reddit.com${post.data.permalink}`,
-created: post.data.created_utc * 1000, // Convert to milliseconds
-flair: post.data.link_flair_text || 'N/A',
-score: post.data.score || 0,
-thumbnail: post.data.thumbnail && post.data.thumbnail !== 'self' ? post.data.thumbnail : null,
-platform: 'reddit'
-}));
-
-// Combine new posts with saved posts that match current settings
-const matchingPosts = savedPosts.filter(post => {
-// Match platform
-if (post.platform !== currentPlatform) {
-return false;
-}
-
-// Match subreddit (case insensitive)
-if (post.subreddit.toLowerCase() !== settings.subreddit.toLowerCase()) {
-return false;
-}
-
-// Match flair if specified (and not N/A)
-if (settings.flair && settings.flair !== 'N/A') {
-return post.flair && post.flair.toLowerCase().includes(settings.flair.toLowerCase());
-}
-
-return true;
-});
-
-// Combine matching posts with new posts
-allPosts = [...formattedNewPosts, ...matchingPosts]
-.sort((a, b) => b.created - a.created)
-.slice(0, 100); // Keep up to 100 posts in memory
-
-// Save the updated posts
-localStorage.setItem('cachedPosts', JSON.stringify(allPosts));
-
-// Display the posts (but only first batch)
-displayPosts(allPosts.slice(0, visiblePostCount));
-
-// Show/hide "Show More" button based on post count
-showMoreContainer.classList.toggle('hidden', allPosts.length <= visiblePostCount);
-
-// Show success message if new posts were found
-if (newPosts.length > 0) {
-showToast(`Found ${newPosts.length} new post${newPosts.length > 1 ? 's' : ''}`);
-} else {
-showToast('No new posts found');
-}
-} catch (error) {
-console.error('Error checking for posts:', error);
-showToast(`Error: ${error.message}. Try a different subreddit.`, true);
-} finally {
-// Reset countdown
-nextCheckSpan.classList.remove('pulse');
-nextCheckTime = new Date();
-nextCheckTime.setMinutes(nextCheckTime.getMinutes() + parseInt(settings.checkInterval));
-updateCountdown();
-}
-}
-
-function displayPosts(posts) {
-// Show empty state if no posts
-if (posts.length === 0) {
-emptyState.style.display = 'block';
-showMoreContainer.classList.add('hidden');
-return;
-}
-
-// Hide empty state and display posts
-emptyState.style.display = 'none';
-
-// Clear existing posts
-const existingPosts = document.querySelectorAll('.post-card');
-existingPosts.forEach(post => post.remove());
-
-// Create and append post elements
-posts.forEach(post => {
-const postElement = document.createElement('div');
-postElement.className = 'post-card rounded';
-
-// Format date
-const postDate = new Date(post.created);
-const timeAgo = formatTimeAgo(postDate);
-
-if (post.platform === 'reddit') {
-// Reddit-style post
-postElement.innerHTML = `
-<div class="flex">
-<!-- Vote arrows (for UI only) -->
-<div class="flex flex-col items-center mr-2">
-<svg class="w-5 h-5 text-gray-400 hover:text-vote-up cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-</svg>
-<span class="text-xs font-medium my-1">${post.score || 0}</span>
-<svg class="w-5 h-5 text-gray-400 hover:text-vote-down cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-</svg>
-</div>
-
-<!-- Main content -->
-<div class="flex-1">
-${post.thumbnail ? `
-<div class="flex">
-<div class="flex-1">
-<div class="mb-1 text-xs text-gray-500 dark:text-gray-400">
-<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 mr-2">
-r/${post.subreddit}
-</span>
-<span>Posted by u/${post.author}</span>
-<span class="mx-1">•</span>
-<span>${timeAgo}</span>
-</div>
-<a href="${post.permalink}" target="_blank" rel="noopener noreferrer" class="text-md font-medium hover:underline">
-${post.title}
-</a>
-<div class="mt-1">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-${post.flair}
-</span>
-</div>
-</div>
-<div class="ml-2">
-<img src="${post.thumbnail}" alt="Thumbnail" class="w-16 h-16 object-cover rounded">
-</div>
-</div>
-` : `
-<div class="mb-1 text-xs text-gray-500 dark:text-gray-400">
-<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 mr-2">
-r/${post.subreddit}
-</span>
-<span>Posted by u/${post.author}</span>
-<span class="mx-1">•</span>
-<span>${timeAgo}</span>
-</div>
-<a href="${post.permalink}" target="_blank" rel="noopener noreferrer" class="text-md font-medium hover:underline">
-${post.title}
-</a>
-<div class="mt-1">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-${post.flair}
-</span>
-</div>
-`}
-</div>
-</div>
-`;
-} else if (post.platform === 'twitter') {
-// Twitter-style post (placeholder for now)
-postElement.innerHTML = `
-<div class="flex">
-<div class="flex-shrink-0 mr-3">
-<div class="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white">
-${post.author.charAt(0).toUpperCase()}
-</div>
-</div>
-<div>
-<div class="flex items-center mb-1">
-<span class="font-bold mr-1">${post.author}</span>
-<span class="text-gray-500 dark:text-gray-400">@${post.author}</span>
-<span class="mx-1 text-gray-500 dark:text-gray-400">•</span>
-<span class="text-gray-500 dark:text-gray-400">${timeAgo}</span>
-</div>
-<div class="mb-2">${post.title}</div>
-${post.thumbnail ? `<img src="${post.thumbnail}" alt="Media" class="rounded-lg w-full max-h-80 object-cover mb-2">` : ''}
-<div class="flex justify-between text-gray-500 dark:text-gray-400">
-<span>💬</span>
-<span>🔄</span>
-<span>❤️</span>
-<span>📤</span>
-</div>
-</div>
-</div>
-`;
-} else if (post.platform === 'facebook') {
-// Facebook-style post (placeholder for now)
-postElement.innerHTML = `
-<div>
-<div class="flex items-center mb-3">
-<div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white mr-3">
-${post.author.charAt(0).toUpperCase()}
-</div>
-<div>
-<div class="font-bold">${post.author}</div>
-<div class="text-xs text-gray-500 dark:text-gray-400">${timeAgo}</div>
-</div>
-</div>
-<div class="mb-3">${post.title}</div>
-${post.thumbnail ? `<img src="${post.thumbnail}" alt="Media" class="rounded-lg w-full max-h-80 object-cover mb-3">` : ''}
-<div class="flex justify-between border-t border-b py-2 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
-<span>👍 Like</span>
-<span>💬 Comment</span>
-<span>📤 Share</span>
-</div>
-</div>
-`;
-}
-
-postsContainer.appendChild(postElement);
-});
-}
-
-function formatTimeAgo(date) {
-const seconds = Math.floor((new Date() - date) / 1000);
-
-let interval = Math.floor(seconds / 31536000);
-if (interval > 1) return interval + ' years ago';
-if (interval === 1) return '1 year ago';
-
-interval = Math.floor(seconds / 2592000);
-if (interval > 1) return interval + ' months ago';
-if (interval === 1) return '1 month ago';
-
-interval = Math.floor(seconds / 86400);
-if (interval > 1) return interval + ' days ago';
-if (interval === 1) return '1 day ago';
-
-interval = Math.floor(seconds / 3600);
-if (interval > 1) return interval + ' hours ago';
-if (interval === 1) return '1 hour ago';
-
-interval = Math.floor(seconds / 60);
-if (interval > 1) return interval + ' minutes ago';
-if (interval === 1) return '1 minute ago';
-
-return 'just now';
-}
-
-async function sendNotification(post) {
-try {
-const platformName = currentPlatform.charAt(0).toUpperCase() + currentPlatform.slice(1);
-
-// Send notification using ntfy.sh
-const message = `New ${platformName} Post: ${post.title}`;
-const topic = settings.ntfyTopic;
-
-await fetch(`https://ntfy.sh/${topic}`, {
-method: 'POST',
-body: message,
-headers: {
-'Title': `${platformName} Alert`,
-'Tags': currentPlatform === 'reddit' ? 'reddit' :
-currentPlatform === 'twitter' ? 'bird' :
-'bell',
-'Priority': '3',
-'Click': post.permalink || ''
-}
-});
-
-console.log('Notification sent for:', post.title);
-} catch (error) {
-console.error('Error sending notification:', error);
-}
-}
-
-function copyTopic() {
-navigator.clipboard.writeText(settings.ntfyTopic)
-.then(() => {
-showToast('Topic copied to clipboard');
-})
-.catch(err => {
-console.error('Error copying topic:', err);
-showToast('Failed to copy topic', true);
-});
-}
-
-function showToast(message, isError = false) {
-const toast = document.getElementById('toast');
-const toastMessage = document.getElementById('toast-message');
-
-toastMessage.textContent = message;
-toast.className = isError ? 'fixed right-4 bottom-4 z-50 fadeIn bg-red-500' : 'fixed right-4 bottom-4 z-50 fadeIn';
-toast.style.display = 'block';
-
-setTimeout(() => {
-toast.className = 'fixed right-4 bottom-4 z-50 fadeOut';
-setTimeout(() => {
-toast.style.display = 'none';
-}, 300);
-}, 3000);
-}
-
-function initializeTheme() {
-// Check for saved theme preference or use system preference
-const savedTheme = localStorage.getItem('color-theme');
-const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-document.documentElement.classList.add('dark');
-darkIcon.classList.add('hidden');
-lightIcon.classList.remove('hidden');
-} else {
-document.documentElement.classList.remove('dark');
-darkIcon.classList.remove('hidden');
-lightIcon.classList.add('hidden');
-}
-}
-
-function toggleTheme() {
-// Toggle dark class on html element
-document.documentElement.classList.toggle('dark');
-
-// Update theme in localStorage
-if (document.documentElement.classList.contains('dark')) {
-localStorage.setItem('color-theme', 'dark');
-darkIcon.classList.add('hidden');
-lightIcon.classList.remove('hidden');
-} else {
-localStorage.setItem('color-theme', 'light');
-darkIcon.classList.remove('hidden');
-lightIcon.classList.add('hidden');
-}
-}
-});
-</script>
+  <!-- App header -->
+  <header class="app-header sticky top-0 z-10 px-4 py-2">
+    <div class="container mx-auto flex items-center justify-between">
+      <div class="flex items-center">
+        <svg class="h-8 w-8 text-primary fill-current" viewBox="0 0 20 20">
+          <path d="M10 0C4.478 0 0 4.478 0 10c0 5.523 4.478 10 10 10 5.523 0 10-4.477 10-10 0-5.522-4.477-10-10-10zm5.7 11.25c.06.218.081.44.061.661-.06.661-.366 1.235-.846 1.637-.48.4-1.145.622-1.827.622-.737 0-1.416-.246-1.956-.661-.54.415-1.22.661-1.956.661-.682 0-1.347-.222-1.827-.622-.48-.402-.786-.976-.846-1.637-.02-.22 0-.443.061-.661-.53-.354-.847-.942-.847-1.573 0-.698.347-1.309.878-1.677.53-.369 1.225-.502 1.877-.332.654-.894 1.615-1.464 2.66-1.464s2.006.57 2.66 1.464c.652-.17 1.347-.037 1.877.332.53.368.878.979.878 1.677 0 .631-.318 1.219-.847 1.573z"></path>
+        </svg>
+        <h1 class="ml-2 text-xl font-bold text-primary">Social Search</h1>
+      </div>
+      <div class="flex items-center space-x-4">
+        <div id="user-menu" class="hidden">
+          <span id="username-display" class="text-sm"></span>
+          <button id="logout-btn" class="btn btn-secondary ml-2">Logout</button>
+        </div>
+        <button id="login-btn" class="btn btn-primary">Login</button>
+        <button id="theme-toggle" class="p-2 rounded-full">
+          <svg id="theme-toggle-dark-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+          </svg>
+          <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation tabs -->
+  <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <div class="container mx-auto px-4">
+      <div class="flex space-x-4">
+        <div class="nav-item active" data-tab="monitor">Monitor</div>
+        <div class="nav-item" data-tab="daily-overview">Daily Overview</div>
+        <div class="nav-item" data-tab="favorites">My Favorites</div>
+        <div class="nav-item" data-tab="settings">Settings</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-6">
+    <!-- Login/Register Modal -->
+    <div id="auth-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+          <h2 id="auth-modal-title" class="text-xl font-bold">Login</h2>
+          <button id="close-auth-modal" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <div id="auth-tabs" class="flex mb-4">
+          <button id="login-tab" class="flex-1 py-2 px-4 bg-primary text-white rounded-l">Login</button>
+          <button id="register-tab" class="flex-1 py-2 px-4 bg-gray-200 dark:bg-gray-700 rounded-r">Register</button>
+        </div>
+        
+        <form id="auth-form">
+          <div id="register-fields" class="hidden">
+            <div class="mb-4">
+              <label class="block text-sm font-medium mb-1">Email</label>
+              <input type="email" id="email" class="form-input" placeholder="Enter your email">
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Username</label>
+            <input type="text" id="username" class="form-input" placeholder="Enter your username" required>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Password</label>
+            <input type="password" id="password" class="form-input" placeholder="Enter your password" required>
+          </div>
+          
+          <div id="confirm-password-field" class="hidden mb-4">
+            <label class="block text-sm font-medium mb-1">Confirm Password</label>
+            <input type="password" id="confirm-password" class="form-input" placeholder="Confirm your password">
+          </div>
+          
+          <button type="submit" class="btn btn-primary w-full">Login</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Monitor Tab -->
+    <main id="monitor-tab-content" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Left column - Settings & Recommended Sources -->
+      <div class="md:col-span-1">
+        <!-- Settings Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+          <h2 class="text-xl font-semibold mb-4">Monitor Settings</h2>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1" for="subreddit">Subreddit</label>
+            <input type="text" id="subreddit" value="Soundmap" class="form-input">
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1" for="flair">Filter by Flair</label>
+            <input type="text" id="flair" value="N/A" class="form-input">
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1" for="checkInterval">Check Interval</label>
+            <select id="checkInterval" class="form-input">
+              <option value="1">1 minute</option>
+              <option value="5" selected>5 minutes</option>
+              <option value="10">10 minutes</option>
+              <option value="15">15 minutes</option>
+              <option value="30">30 minutes</option>
+              <option value="60">1 hour</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1" for="ntfyTopic">Ntfy.sh Topic</label>
+            <input type="text" id="ntfyTopic" value="socialsearch" class="form-input">
+          </div>
+          <div class="flex items-center mb-4">
+            <input type="checkbox" id="notifications" class="h-4 w-4 text-primary" checked>
+            <label for="notifications" class="ml-2 block text-sm">Enable Notifications</label>
+          </div>
+          <div class="flex justify-between items-center">
+            <span id="next-check" class="text-sm text-gray-600 dark:text-gray-400">Next check in: 5:00</span>
+            <div class="flex space-x-2">
+              <button id="save-settings" class="btn btn-primary">Save Settings</button>
+              <button id="check-now" class="btn btn-secondary">Check Now</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add to Favorites Button (for logged in users) -->
+        <div id="add-to-favorites-card" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+          <h3 class="text-lg font-semibold mb-2">Add to Favorites</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Save this subreddit to your daily overview</p>
+          <button id="add-to-favorites-btn" class="btn btn-primary w-full">Add r/<span id="current-subreddit">Soundmap</span> to Favorites</button>
+        </div>
+
+        <!-- Recommended Sources Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+          <h2 class="text-xl font-semibold mb-4">Popular Subreddits</h2>
+          <div class="flex flex-wrap gap-2">
+            <span class="chip px-3 py-1 rounded-full text-sm" data-source="AskReddit">r/AskReddit</span>
+            <span class="chip px-3 py-1 rounded-full text-sm" data-source="mildlyinfuriating">r/mildlyinfuriating</span>
+            <span class="chip px-3 py-1 rounded-full text-sm" data-source="worldnews">r/worldnews</span>
+            <span class="chip px-3 py-1 rounded-full text-sm" data-source="funny">r/funny</span>
+            <span class="chip px-3 py-1 rounded-full text-sm" data-source="gaming">r/gaming</span>
+            <span class="chip px-3 py-1 rounded-full text-sm" data-source="pics">r/pics</span>
+            <span class="chip px-3 py-1 rounded-full text-sm" data-source="news">r/news</span>
+            <span class="chip px-3 py-1 rounded-full text-sm" data-source="aww">r/aww</span>
+          </div>
+        </div>
+
+        <!-- Notification Setup Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+          <div class="flex items-center mb-4">
+            <svg class="h-5 w-5 mr-2 text-primary" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+            </svg>
+            <h3 class="text-xl font-semibold">Mobile Notifications</h3>
+          </div>
+          <p class="mb-4 text-gray-600 dark:text-gray-400">Get alerts on your phone using ntfy.sh</p>
+          <div class="space-y-4">
+            <div>
+              <h4 class="font-medium mb-2">1. Download ntfy app</h4>
+              <div class="flex space-x-2 mb-4">
+                <a href="https://play.google.com/store/apps/details?id=io.heckel.ntfy" target="_blank" class="btn btn-secondary text-sm">Android</a>
+                <a href="https://apps.apple.com/us/app/ntfy/id1625396347" target="_blank" class="btn btn-secondary text-sm">iOS</a>
+              </div>
+            </div>
+            <div>
+              <h4 class="font-medium mb-2">2. Subscribe to the topic</h4>
+              <div class="flex space-x-2 mb-4">
+                <div class="flex-1 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded font-mono text-sm">
+                  <span id="topic-display">socialsearch</span>
+                </div>
+                <button id="copy-topic" class="btn btn-secondary">Copy</button>
+              </div>
+            </div>
+          </div>
+          <a href="https://ntfy.sh/socialsearch" target="_blank" id="ntfy-link" class="btn btn-primary mt-2">Open ntfy.sh Web Interface</a>
+        </div>
+      </div>
+
+      <!-- Right column - Post Feed -->
+      <div class="md:col-span-2">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Recent Posts</h2>
+            <button id="check-now-feed" class="btn btn-primary text-sm">Check Now</button>
+          </div>
+          
+          <div id="posts-container">
+            <div class="text-center py-10" id="empty-state">
+              <svg class="h-12 w-12 mx-auto text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <h3 class="text-lg font-medium">No posts yet</h3>
+              <p class="text-gray-500 dark:text-gray-400 mt-1">Content from your selected platforms will appear here</p>
+            </div>
+          </div>
+          
+          <div id="show-more-container" class="mt-4 text-center hidden">
+            <button id="show-more-posts" class="btn btn-secondary">Show More Posts</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Daily Overview Tab -->
+    <div id="daily-overview-tab-content" class="hidden">
+      <div id="login-required-message" class="text-center py-12">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+          <svg class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <h2 class="text-2xl font-bold mb-2">Login Required</h2>
+          <p class="text-gray-600 dark:text-gray-400 mb-6">Please log in to access your personalized daily overview</p>
+          <button id="login-for-overview" class="btn btn-primary">Login</button>
+        </div>
+      </div>
+      
+      <div id="daily-overview-content" class="hidden">
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h1 class="text-3xl font-bold">Daily Overview</h1>
+            <p class="text-gray-500 dark:text-gray-400">See what's happening in your favorite communities</p>
+          </div>
+          <button id="generate-overview" class="btn btn-primary">Generate New Overview</button>
+        </div>
+        
+        <div id="overview-content">
+          <div id="no-favorites-message" class="text-center py-12">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+              <svg class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              <h2 class="text-2xl font-bold mb-2">No Favorites Yet</h2>
+              <p class="text-gray-600 dark:text-gray-400 mb-6">Add some favorite communities to get started with your daily overview</p>
+              <button id="go-to-favorites" class="btn btn-primary">Manage Favorites</button>
+            </div>
+          </div>
+          
+          <div id="daily-digest" class="hidden space-y-6">
+            <!-- Daily digest content will be populated here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Favorites Tab -->
+    <div id="favorites-tab-content" class="hidden">
+      <div id="favorites-login-required" class="text-center py-12">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+          <svg class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <h2 class="text-2xl font-bold mb-2">Login Required</h2>
+          <p class="text-gray-600 dark:text-gray-400 mb-6">Please log in to manage your favorite communities</p>
+          <button id="login-for-favorites" class="btn btn-primary">Login</button>
+        </div>
+      </div>
+      
+      <div id="favorites-content" class="hidden">
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h1 class="text-3xl font-bold">My Favorites</h1>
+            <p class="text-gray-500 dark:text-gray-400">Manage your favorite communities for daily overviews</p>
+          </div>
+          <button id="add-favorite-btn" class="btn btn-primary">Add Favorite</button>
+        </div>
+        
+        <div id="favorites-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Favorites will be populated here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="settings-tab-content" class="hidden">
+      <div class="max-w-2xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">Settings</h1>
+        
+        <div class="space-y-6">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">General Settings</h2>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium mb-1">Default Check Interval</label>
+                <select id="default-interval" class="form-input">
+                  <option value="1">1 minute</option>
+                  <option value="5" selected>5 minutes</option>
+                  <option value="10">10 minutes</option>
+                  <option value="15">15 minutes</option>
+                  <option value="30">30 minutes</option>
+                  <option value="60">1 hour</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Default Ntfy Topic</label>
+                <input type="text" id="default-topic" value="socialsearch" class="form-input">
+              </div>
+              <div class="flex items-center">
+                <input type="checkbox" id="auto-notifications" class="h-4 w-4 text-primary" checked>
+                <label for="auto-notifications" class="ml-2 block text-sm">Enable notifications by default</label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">Daily Overview Settings</h2>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium mb-1">Overview Generation Time</label>
+                <select id="overview-time" class="form-input">
+                  <option value="6">6:00 AM</option>
+                  <option value="7" selected>7:00 AM</option>
+                  <option value="8">8:00 AM</option>
+                  <option value="9">9:00 AM</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Posts per Community</label>
+                <select id="posts-per-community" class="form-input">
+                  <option value="3">3 posts</option>
+                  <option value="5" selected>5 posts</option>
+                  <option value="10">10 posts</option>
+                </select>
+              </div>
+              <div class="flex items-center">
+                <input type="checkbox" id="auto-generate" class="h-4 w-4 text-primary" checked>
+                <label for="auto-generate" class="ml-2 block text-sm">Auto-generate daily overviews</label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">Data Management</h2>
+            <div class="space-y-4">
+              <button id="export-data" class="btn btn-secondary">Export My Data</button>
+              <button id="import-data" class="btn btn-secondary">Import Data</button>
+              <button id="clear-data" class="btn btn-secondary text-red-600">Clear All Data</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="fixed right-4 bottom-4 z-50 opacity-0 transition-opacity duration-300 hidden">
+    <div class="bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg">
+      <span id="toast-message">Message here</span>
+    </div>
+  </div>
+
+  <script>
+    // Enhanced Social Search Application
+    class SocialSearchApp {
+      constructor() {
+        this.currentUser = null;
+        this.settings = this.loadSettings();
+        this.favorites = this.loadFavorites();
+        this.dailyOverviews = this.loadDailyOverviews();
+        this.posts = [];
+        this.visiblePostCount = 10;
+        this.timer = null;
+        this.nextCheckTime = new Date();
+        this.currentTab = 'monitor';
+        
+        this.initializeApp();
+      }
+      
+      // Initialize the application
+      initializeApp() {
+        this.checkAuthentication();
+        this.initializeUI();
+        this.bindEvents();
+        this.initializeTheme();
+        this.startTimer();
+        this.checkForPosts();
+        this.updateFavoritesUI();
+        this.updateDailyOverviewUI();
+      }
+      
+      // Authentication methods
+      checkAuthentication() {
+        const userData = localStorage.getItem('currentUser');
+        if (userData) {
+          this.currentUser = JSON.parse(userData);
+          this.updateAuthUI();
+        }
+      }
+      
+      login(username, password) {
+        const users = JSON.parse(localStorage.getItem('users') || '{}');
+        const user = users[username];
+        
+        if (user && user.password === password) {
+          this.currentUser = { username, email: user.email };
+          localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+          this.updateAuthUI();
+          this.closeAuthModal();
+          this.showToast('Login successful!');
+          this.updateTabContent();
+          return true;
+        }
+        
+        this.showToast('Invalid credentials', true);
+        return false;
+      }
+      
+      register(username, email, password) {
+        const users = JSON.parse(localStorage.getItem('users') || '{}');
+        
+        if (users[username]) {
+          this.showToast('Username already exists', true);
+          return false;
+        }
+        
+        users[username] = { email, password, createdAt: new Date().toISOString() };
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        this.showToast('Registration successful! Please log in.');
+        document.getElementById('login-tab').click();
+        return true;
+      }
+      
+      logout() {
+        this.currentUser = null;
+        localStorage.removeItem('currentUser');
+        this.updateAuthUI();
+        this.showToast('Logged out successfully');
+        this.switchTab('monitor');
+      }
+      
+      updateAuthUI() {
+        const loginBtn = document.getElementById('login-btn');
+        const userMenu = document.getElementById('user-menu');
+        const usernameDisplay = document.getElementById('username-display');
+        const addToFavoritesCard = document.getElementById('add-to-favorites-card');
+        
+        if (this.currentUser) {
+          loginBtn.style.display = 'none';
+          userMenu.style.display = 'flex';
+          usernameDisplay.textContent = `Welcome, ${this.currentUser.username}`;
+          if (addToFavoritesCard) addToFavoritesCard.classList.remove('hidden');
+        } else {
+          loginBtn.style.display = 'block';
+          userMenu.style.display = 'none';
+          if (addToFavoritesCard) addToFavoritesCard.classList.add('hidden');
+        }
+      }
+      
+      // Favorites management
+      loadFavorites() {
+        if (!this.currentUser) return [];
+        const key = `favorites_${this.currentUser.username}`;
+        return JSON.parse(localStorage.getItem(key) || '[]');
+      }
+      
+      saveFavorites() {
+        if (!this.currentUser) return;
+        const key = `favorites_${this.currentUser.username}`;
+        localStorage.setItem(key, JSON.stringify(this.favorites));
+      }
+      
+      addToFavorites(platform, community) {
+        if (!this.currentUser) {
+          this.showToast('Please log in to add favorites', true);
+          return;
+        }
+        
+        const favorite = {
+          id: Date.now(),
+          platform,
+          community,
+          addedAt: new Date().toISOString()
+        };
+        
+        // Check if already exists
+        const exists = this.favorites.some(f => f.platform === platform && f.community === community);
+        if (exists) {
+          this.showToast('Already in favorites', true);
+          return;
+        }
+        
+        this.favorites.push(favorite);
+        this.saveFavorites();
+        this.updateFavoritesUI();
+        this.showToast(`Added r/${community} to favorites`);
+      }
+      
+      removeFromFavorites(id) {
+        this.favorites = this.favorites.filter(f => f.id !== id);
+        this.saveFavorites();
+        this.updateFavoritesUI();
+        this.showToast('Removed from favorites');
+      }
+      
+      updateFavoritesUI() {
+        const favoritesGrid = document.getElementById('favorites-grid');
+        if (!favoritesGrid) return;
+        
+        if (!this.currentUser) {
+          return;
+        }
+        
+        if (this.favorites.length === 0) {
+          favoritesGrid.innerHTML = `
+            <div class="col-span-full text-center py-12">
+              <svg class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              <h3 class="text-xl font-medium mb-2">No favorites yet</h3>
+              <p class="text-gray-500 dark:text-gray-400">Start adding communities to see them here</p>
+            </div>
+          `;
+          return;
+        }
+        
+        favoritesGrid.innerHTML = this.favorites.map(favorite => `
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="font-semibold">r/${favorite.community}</h3>
+              <button onclick="app.removeFromFavorites(${favorite.id})" class="text-red-500 hover:text-red-700">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">${favorite.platform}</p>
+            <p class="text-xs text-gray-400 mt-2">Added ${new Date(favorite.addedAt).toLocaleDateString()}</p>
+          </div>
+        `).join('');
+      }
+      
+      // Daily overview methods
+      loadDailyOverviews() {
+        if (!this.currentUser) return [];
+        const key = `overviews_${this.currentUser.username}`;
+        return JSON.parse(localStorage.getItem(key) || '[]');
+      }
+      
+      saveDailyOverviews() {
+        if (!this.currentUser) return;
+        const key = `overviews_${this.currentUser.username}`;
+        localStorage.setItem(key, JSON.stringify(this.dailyOverviews));
+      }
+      
+      async generateDailyOverview() {
+        if (!this.currentUser) {
+          this.showToast('Please log in to generate overview', true);
+          return;
+        }
+        
+        if (this.favorites.length === 0) {
+          this.showToast('Add some favorites first', true);
+          return;
+        }
+        
+        this.showToast('Generating daily overview...');
+        
+        const overview = {
+          id: Date.now(),
+          generatedAt: new Date().toISOString(),
+          communities: []
+        };
+        
+        // Generate content for each favorite community
+        for (const favorite of this.favorites) {
+          if (favorite.platform === 'reddit') {
+            try {
+              const posts = await this.fetchRedditPosts(favorite.community, 5);
+              if (posts.length > 0) {
+                overview.communities.push({
+                  name: favorite.community,
+                  platform: 'reddit',
+                  posts: posts
+                });
+              }
+            } catch (error) {
+              console.error(`Error fetching posts for ${favorite.community}:`, error);
+            }
+          }
+        }
+        
+        this.dailyOverviews.unshift(overview);
+        // Keep only last 30 overviews
+        this.dailyOverviews = this.dailyOverviews.slice(0, 30);
+        this.saveDailyOverviews();
+        this.updateDailyOverviewUI();
+        this.showToast('Daily overview generated!');
+      }
+      
+      updateDailyOverviewUI() {
+        const overviewContent = document.getElementById('overview-content');
+        const noFavoritesMessage = document.getElementById('no-favorites-message');
+        const dailyDigest = document.getElementById('daily-digest');
+        
+        if (!this.currentUser || this.favorites.length === 0) {
+          if (noFavoritesMessage) noFavoritesMessage.classList.remove('hidden');
+          if (dailyDigest) dailyDigest.classList.add('hidden');
+          return;
+        }
+        
+        if (noFavoritesMessage) noFavoritesMessage.classList.add('hidden');
+        if (dailyDigest) dailyDigest.classList.remove('hidden');
+        
+        if (this.dailyOverviews.length === 0) {
+          dailyDigest.innerHTML = `
+            <div class="text-center py-12">
+              <svg class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <h3 class="text-xl font-medium mb-2">No overviews yet</h3>
+              <p class="text-gray-500 dark:text-gray-400 mb-4">Generate your first daily overview</p>
+              <button onclick="app.generateDailyOverview()" class="btn btn-primary">Generate Overview</button>
+            </div>
+          `;
+          return;
+        }
+        
+        const latestOverview = this.dailyOverviews[0];
+        dailyDigest.innerHTML = `
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-semibold">Today's Overview</h2>
+              <span class="text-sm text-gray-500">${new Date(latestOverview.generatedAt).toLocaleDateString()}</span>
+            </div>
+            
+            <div class="space-y-6">
+              ${latestOverview.communities.map(community => `
+                <div>
+                  <h3 class="text-lg font-semibold mb-3 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M10 0C4.478 0 0 4.478 0 10c0 5.523 4.478 10 10 10 5.523 0 10-4.477 10-10 0-5.522-4.477-10-10-10z"></path>
+                    </svg>
+                    r/${community.name}
+                    <span class="ml-2 text-sm text-gray-500">${community.posts.length} posts</span>
+                  </h3>
+                  <div class="space-y-3">
+                    ${community.posts.map(post => `
+                      <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <h4 class="font-medium mb-2">${post.title}</h4>
+                        <div class="flex justify-between items-center text-sm text-gray-500">
+                          <span>by ${post.author}</span>
+                          <a href="${post.url}" target="_blank" class="text-primary hover:underline">View Post</a>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+      
+      // Settings management
+      loadSettings() {
+        const defaultSettings = {
+          subreddit: 'Soundmap',
+          flair: 'N/A',
+          checkInterval: 5,
+          ntfyTopic: 'socialsearch',
+          notifications: true,
+          overviewTime: 7,
+          postsPerCommunity: 5,
+          autoGenerate: true
+        };
+        
+        return { ...defaultSettings, ...JSON.parse(localStorage.getItem('settings') || '{}') };
+      }
+      
+      saveSettings() {
+        localStorage.setItem('settings', JSON.stringify(this.settings));
+        this.showToast('Settings saved successfully');
+        this.updateUI();
+        this.startTimer();
+      }
+      
+      // Reddit API methods
+      async fetchRedditPosts(subreddit, limit = 25) {
+        try {
+          const url = `https://www.reddit.com/r/${subreddit}/new.json?limit=${limit}`;
+          const response = await fetch(url);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          
+          const data = await response.json();
+          
+          if (!data || !data.data || !data.data.children) {
+            return [];
+          }
+          
+          return data.data.children.map(child => {
+            const post = child.data;
+            return {
+              id: post.id,
+              title: post.title,
+              author: post.author,
+              subreddit: post.subreddit,
+              url: `https://www.reddit.com${post.permalink}`,
+              flair: post.link_flair_text || null,
+              content: post.selftext || null,
+              createdUtc: new Date(post.created_utc * 1000),
+              score: post.score,
+              numComments: post.num_comments
+            };
+          });
+        } catch (error) {
+          console.error('Error fetching Reddit posts:', error);
+          return [];
+        }
+      }
+      
+      async checkForPosts() {
+        try {
+          console.log('Checking for new Reddit posts...');
+          
+          const posts = await this.fetchRedditPosts(this.settings.subreddit);
+          let filteredPosts = posts;
+          
+          // Apply flair filter if set
+          if (this.settings.flair && this.settings.flair !== 'N/A') {
+            filteredPosts = posts.filter(post => 
+              post.flair && post.flair.toLowerCase().includes(this.settings.flair.toLowerCase())
+            );
+          }
+          
+          // Check for new posts
+          const newPosts = filteredPosts.filter(post => 
+            !this.posts.some(existingPost => existingPost.id === post.id)
+          );
+          
+          if (newPosts.length > 0) {
+            this.posts = [...newPosts, ...this.posts].slice(0, 100); // Keep last 100 posts
+            this.displayPosts();
+            
+            // Send notifications for new posts
+            if (this.settings.notifications) {
+              for (const post of newPosts) {
+                await this.sendNotification(post);
+              }
+            }
+            
+            this.showToast(`Found ${newPosts.length} new posts`);
+          } else {
+            console.log('No new posts to notify about');
+          }
+          
+        } catch (error) {
+          console.error('Error checking for posts:', error);
+          this.showToast('Error checking for posts', true);
+        }
+      }
+      
+      // Notification methods
+      async sendNotification(post) {
+        if (!this.settings.notifications) return;
+        
+        try {
+          const message = {
+            topic: this.settings.ntfyTopic,
+            message: `New post in r/${post.subreddit}: ${post.title}`,
+            title: 'Social Search Alert',
+            actions: [
+              {
+                action: 'view',
+                label: 'View Post',
+                url: post.url
+              }
+            ]
+          };
+          
+          const response = await fetch('https://ntfy.sh/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(message)
+          });
+          
+          return response.ok;
+        } catch (error) {
+          console.error('Error sending notification:', error);
+          return false;
+        }
+      }
+      
+      // UI methods
+      initializeUI() {
+        // Populate form fields with current settings
+        document.getElementById('subreddit').value = this.settings.subreddit;
+        document.getElementById('flair').value = this.settings.flair;
+        document.getElementById('checkInterval').value = this.settings.checkInterval;
+        document.getElementById('ntfyTopic').value = this.settings.ntfyTopic;
+        document.getElementById('notifications').checked = this.settings.notifications;
+        
+        // Update topic display
+        document.getElementById('topic-display').textContent = this.settings.ntfyTopic;
+        document.getElementById('ntfy-link').href = `https://ntfy.sh/${this.settings.ntfyTopic}`;
+        document.getElementById('current-subreddit').textContent = this.settings.subreddit;
+        
+        // Settings tab
+        if (document.getElementById('default-interval')) {
+          document.getElementById('default-interval').value = this.settings.checkInterval;
+          document.getElementById('default-topic').value = this.settings.ntfyTopic;
+          document.getElementById('auto-notifications').checked = this.settings.notifications;
+          document.getElementById('overview-time').value = this.settings.overviewTime;
+          document.getElementById('posts-per-community').value = this.settings.postsPerCommunity;
+          document.getElementById('auto-generate').checked = this.settings.autoGenerate;
+        }
+      }
+      
+      updateUI() {
+        document.getElementById('topic-display').textContent = this.settings.ntfyTopic;
+        document.getElementById('ntfy-link').href = `https://ntfy.sh/${this.settings.ntfyTopic}`;
+        document.getElementById('current-subreddit').textContent = this.settings.subreddit;
+      }
+      
+      displayPosts() {
+        const postsContainer = document.getElementById('posts-container');
+        const emptyState = document.getElementById('empty-state');
+        const showMoreContainer = document.getElementById('show-more-container');
+        
+        if (this.posts.length === 0) {
+          emptyState.style.display = 'block';
+          showMoreContainer.classList.add('hidden');
+          return;
+        }
+        
+        emptyState.style.display = 'none';
+        
+        const visiblePosts = this.posts.slice(0, this.visiblePostCount);
+        
+        postsContainer.innerHTML = visiblePosts.map(post => `
+          <div class="post-card rounded-lg">
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="text-lg font-semibold line-clamp-2">${post.title}</h3>
+              ${post.flair ? `<span class="bg-primary text-white px-2 py-1 rounded text-xs ml-2 flex-shrink-0">${post.flair}</span>` : ''}
+            </div>
+            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
+              <span>by ${post.author}</span>
+              <span class="mx-2">•</span>
+              <span>${post.score} points</span>
+              <span class="mx-2">•</span>
+              <span>${post.numComments} comments</span>
+              <span class="mx-2">•</span>
+              <span>${this.formatTimeAgo(post.createdUtc)}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-500">r/${post.subreddit}</span>
+              <a href="${post.url}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline text-sm">
+                View Post →
+              </a>
+            </div>
+          </div>
+        `).join('');
+        
+        // Show more button
+        if (this.posts.length > this.visiblePostCount) {
+          showMoreContainer.classList.remove('hidden');
+        } else {
+          showMoreContainer.classList.add('hidden');
+        }
+      }
+      
+      formatTimeAgo(date) {
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
+        
+        if (diffInSeconds < 60) return `${diffInSeconds}s ago`;
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+        return `${Math.floor(diffInSeconds / 86400)}d ago`;
+      }
+      
+      // Timer methods
+      startTimer() {
+        clearInterval(this.timer);
+        this.nextCheckTime = new Date();
+        this.nextCheckTime.setMinutes(this.nextCheckTime.getMinutes() + this.settings.checkInterval);
+        
+        this.timer = setInterval(() => {
+          this.updateCountdown();
+        }, 1000);
+        
+        this.updateCountdown();
+      }
+      
+      updateCountdown() {
+        const now = new Date();
+        const timeLeft = Math.max(0, this.nextCheckTime - now);
+        
+        if (timeLeft === 0) {
+          this.checkForPosts();
+          this.nextCheckTime = new Date();
+          this.nextCheckTime.setMinutes(this.nextCheckTime.getMinutes() + this.settings.checkInterval);
+        }
+        
+        const minutes = Math.floor((timeLeft / 1000 / 60) % 60);
+        const seconds = Math.floor((timeLeft / 1000) % 60);
+        
+        const nextCheckSpan = document.getElementById('next-check');
+        if (nextCheckSpan) {
+          nextCheckSpan.textContent = `Next check in: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+      }
+      
+      // Theme methods
+      initializeTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        this.setTheme(savedTheme);
+      }
+      
+      setTheme(theme) {
+        const html = document.documentElement;
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
+        
+        if (theme === 'dark') {
+          html.classList.add('dark');
+          darkIcon.classList.remove('hidden');
+          lightIcon.classList.add('hidden');
+        } else {
+          html.classList.remove('dark');
+          darkIcon.classList.add('hidden');
+          lightIcon.classList.remove('hidden');
+        }
+        
+        localStorage.setItem('theme', theme);
+      }
+      
+      toggleTheme() {
+        const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        this.setTheme(newTheme);
+      }
+      
+      // Tab management
+      switchTab(tabName) {
+        // Update nav items
+        document.querySelectorAll('.nav-item').forEach(item => {
+          item.classList.remove('active');
+          if (item.dataset.tab === tabName) {
+            item.classList.add('active');
+          }
+        });
+        
+        // Update content
+        const contents = ['monitor-tab-content', 'daily-overview-tab-content', 'favorites-tab-content', 'settings-tab-content'];
+        contents.forEach(contentId => {
+          const element = document.getElementById(contentId);
+          if (element) {
+            if (contentId === `${tabName}-tab-content`) {
+              element.classList.remove('hidden');
+            } else {
+              element.classList.add('hidden');
+            }
+          }
+        });
+        
+        this.currentTab = tabName;
+        this.updateTabContent();
+      }
+      
+      updateTabContent() {
+        // Update content based on authentication status
+        if (this.currentTab === 'daily-overview') {
+          const loginRequired = document.getElementById('login-required-message');
+          const overviewContent = document.getElementById('daily-overview-content');
+          
+          if (this.currentUser) {
+            loginRequired.style.display = 'none';
+            overviewContent.classList.remove('hidden');
+            this.updateDailyOverviewUI();
+          } else {
+            loginRequired.style.display = 'block';
+            overviewContent.classList.add('hidden');
+          }
+        }
+        
+        if (this.currentTab === 'favorites') {
+          const loginRequired = document.getElementById('favorites-login-required');
+          const favoritesContent = document.getElementById('favorites-content');
+          
+          if (this.currentUser) {
+            loginRequired.style.display = 'none';
+            favoritesContent.classList.remove('hidden');
+            this.updateFavoritesUI();
+          } else {
+            loginRequired.style.display = 'block';
+            favoritesContent.classList.add('hidden');
+          }
+        }
+      }
+      
+      // Modal methods
+      showAuthModal(mode = 'login') {
+        const modal = document.getElementById('auth-modal');
+        const title = document.getElementById('auth-modal-title');
+        const loginTab = document.getElementById('login-tab');
+        const registerTab = document.getElementById('register-tab');
+        const registerFields = document.getElementById('register-fields');
+        const confirmPasswordField = document.getElementById('confirm-password-field');
+        const submitBtn = document.querySelector('#auth-form button[type="submit"]');
+        
+        modal.classList.remove('hidden');
+        
+        if (mode === 'register') {
+          this.switchAuthTab('register');
+        } else {
+          this.switchAuthTab('login');
+        }
+      }
+      
+      closeAuthModal() {
+        document.getElementById('auth-modal').classList.add('hidden');
+        document.getElementById('auth-form').reset();
+      }
+      
+      switchAuthTab(mode) {
+        const title = document.getElementById('auth-modal-title');
+        const loginTab = document.getElementById('login-tab');
+        const registerTab = document.getElementById('register-tab');
+        const registerFields = document.getElementById('register-fields');
+        const confirmPasswordField = document.getElementById('confirm-password-field');
+        const submitBtn = document.querySelector('#auth-form button[type="submit"]');
+        
+        if (mode === 'register') {
+          title.textContent = 'Register';
+          loginTab.classList.remove('bg-primary', 'text-white');
+          loginTab.classList.add('bg-gray-200', 'dark:bg-gray-700');
+          registerTab.classList.add('bg-primary', 'text-white');
+          registerTab.classList.remove('bg-gray-200', 'dark:bg-gray-700');
+          registerFields.classList.remove('hidden');
+          confirmPasswordField.classList.remove('hidden');
+          submitBtn.textContent = 'Register';
+        } else {
+          title.textContent = 'Login';
+          registerTab.classList.remove('bg-primary', 'text-white');
+          registerTab.classList.add('bg-gray-200', 'dark:bg-gray-700');
+          loginTab.classList.add('bg-primary', 'text-white');
+          loginTab.classList.remove('bg-gray-200', 'dark:bg-gray-700');
+          registerFields.classList.add('hidden');
+          confirmPasswordField.classList.add('hidden');
+          submitBtn.textContent = 'Login';
+        }
+      }
+      
+      // Utility methods
+      showToast(message, isError = false) {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+        
+        toastMessage.textContent = message;
+        toast.classList.remove('hidden');
+        toast.style.opacity = '1';
+        
+        if (isError) {
+          toast.querySelector('div').classList.add('bg-red-600');
+          toast.querySelector('div').classList.remove('bg-gray-800');
+        } else {
+          toast.querySelector('div').classList.remove('bg-red-600');
+          toast.querySelector('div').classList.add('bg-gray-800');
+        }
+        
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          setTimeout(() => {
+            toast.classList.add('hidden');
+          }, 300);
+        }, 3000);
+      }
+      
+      copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+          this.showToast('Copied to clipboard');
+        }).catch(() => {
+          this.showToast('Failed to copy', true);
+        });
+      }
+      
+      // Event binding
+      bindEvents() {
+        // Authentication events
+        document.getElementById('login-btn').addEventListener('click', () => this.showAuthModal('login'));
+        document.getElementById('logout-btn').addEventListener('click', () => this.logout());
+        document.getElementById('close-auth-modal').addEventListener('click', () => this.closeAuthModal());
+        document.getElementById('login-for-overview').addEventListener('click', () => this.showAuthModal('login'));
+        document.getElementById('login-for-favorites').addEventListener('click', () => this.showAuthModal('login'));
+        
+        // Auth modal tabs
+        document.getElementById('login-tab').addEventListener('click', () => this.switchAuthTab('login'));
+        document.getElementById('register-tab').addEventListener('click', () => this.switchAuthTab('register'));
+        
+        // Auth form submission
+        document.getElementById('auth-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const isRegister = document.getElementById('register-fields').classList.contains('hidden') === false;
+          
+          const username = document.getElementById('username').value;
+          const password = document.getElementById('password').value;
+          
+          if (isRegister) {
+            const email = document.getElementById('email').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (password !== confirmPassword) {
+              this.showToast('Passwords do not match', true);
+              return;
+            }
+            
+            this.register(username, email, password);
+          } else {
+            this.login(username, password);
+          }
+        });
+        
+        // Navigation tabs
+        document.querySelectorAll('.nav-item').forEach(item => {
+          item.addEventListener('click', () => {
+            this.switchTab(item.dataset.tab);
+          });
+        });
+        
+        // Settings events
+        document.getElementById('save-settings').addEventListener('click', () => {
+          this.settings.subreddit = document.getElementById('subreddit').value;
+          this.settings.flair = document.getElementById('flair').value;
+          this.settings.checkInterval = parseInt(document.getElementById('checkInterval').value);
+          this.settings.ntfyTopic = document.getElementById('ntfyTopic').value;
+          this.settings.notifications = document.getElementById('notifications').checked;
+          this.saveSettings();
+        });
+        
+        // Check now events
+        document.getElementById('check-now').addEventListener('click', () => this.checkForPosts());
+        document.getElementById('check-now-feed').addEventListener('click', () => this.checkForPosts());
+        
+        // Favorites events
+        document.getElementById('add-to-favorites-btn').addEventListener('click', () => {
+          this.addToFavorites('reddit', this.settings.subreddit);
+        });
+        
+        document.getElementById('generate-overview').addEventListener('click', () => this.generateDailyOverview());
+        document.getElementById('go-to-favorites').addEventListener('click', () => this.switchTab('favorites'));
+        
+        // Popular subreddit chips
+        document.querySelectorAll('.chip').forEach(chip => {
+          chip.addEventListener('click', () => {
+            const subreddit = chip.dataset.source;
+            document.getElementById('subreddit').value = subreddit;
+            this.settings.subreddit = subreddit;
+            this.updateUI();
+          });
+        });
+        
+        // Theme toggle
+        document.getElementById('theme-toggle').addEventListener('click', () => this.toggleTheme());
+        
+        // Copy topic
+        document.getElementById('copy-topic').addEventListener('click', () => {
+          this.copyToClipboard(this.settings.ntfyTopic);
+        });
+        
+        // Show more posts
+        document.getElementById('show-more-posts').addEventListener('click', () => {
+          this.visiblePostCount += 10;
+          this.displayPosts();
+        });
+        
+        // Settings tab events
+        if (document.getElementById('export-data')) {
+          document.getElementById('export-data').addEventListener('click', () => this.exportData());
+          document.getElementById('import-data').addEventListener('click', () => this.importData());
+          document.getElementById('clear-data').addEventListener('click', () => this.clearData());
+        }
+        
+        // Modal click outside to close
+        document.getElementById('auth-modal').addEventListener('click', (e) => {
+          if (e.target === document.getElementById('auth-modal')) {
+            this.closeAuthModal();
+          }
+        });
+      }
+      
+      // Data management methods
+      exportData() {
+        const data = {
+          settings: this.settings,
+          favorites: this.favorites,
+          overviews: this.dailyOverviews,
+          exportDate: new Date().toISOString()
+        };
+        
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `social-search-data-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        this.showToast('Data exported successfully');
+      }
+      
+      importData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const data = JSON.parse(e.target.result);
+              
+              if (data.settings) {
+                this.settings = { ...this.settings, ...data.settings };
+                this.saveSettings();
+              }
+              
+              if (data.favorites) {
+                this.favorites = data.favorites;
+                this.saveFavorites();
+                this.updateFavoritesUI();
+              }
+              
+              if (data.overviews) {
+                this.dailyOverviews = data.overviews;
+                this.saveDailyOverviews();
+                this.updateDailyOverviewUI();
+              }
+              
+              this.showToast('Data imported successfully');
+              this.initializeUI();
+            } catch (error) {
+              this.showToast('Error importing data', true);
+            }
+          };
+          reader.readAsText(file);
+        };
+        input.click();
+      }
+      
+      clearData() {
+        if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+          localStorage.removeItem('settings');
+          localStorage.removeItem('users');
+          localStorage.removeItem('currentUser');
+          
+          if (this.currentUser) {
+            localStorage.removeItem(`favorites_${this.currentUser.username}`);
+            localStorage.removeItem(`overviews_${this.currentUser.username}`);
+          }
+          
+          this.showToast('All data cleared');
+          location.reload();
+        }
+      }
+    }
+    
+    // Initialize the application
+    let app;
+    document.addEventListener('DOMContentLoaded', function() {
+      app = new SocialSearchApp();
+    });
+  </script>
 </body>
 </html>
